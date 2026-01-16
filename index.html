@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tsuzuura.com | Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #2d3436;
+            --accent-color: #0984e3;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        /* タイトルのスタイル修正 */
+        h1 { 
+            font-size: 2.2rem; 
+            font-weight: 800;
+            margin-bottom: 30px; 
+            letter-spacing: -0.02em;
+            color: var(--text-color);
+        }
+
+        .links { display: grid; gap: 16px; }
+        .link-card {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            background: var(--card-bg);
+            border: 1px solid #e1e4e8;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .link-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+        .link-card i {
+            font-size: 1.4rem;
+            width: 32px;
+            margin-right: 12px;
+            text-align: center;
+        }
+        
+        /* アイコンの色指定 */
+        .fa-linkedin { color: #0077b5; }
+        .fa-github { color: #24292e; }
+        .fa-facebook { color: #1877f2; }
+        .wantedly-icon { color: #00a4bb; font-style: normal; font-weight: bold; }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 480px) {
+            .container { padding: 20px; }
+            h1 { font-size: 1.8rem; } /* スマホでは少しだけ小さく調整 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>tsuzuura.com</h1>
+    
+    <div class="links">
+        <a href="https://www.facebook.com/tsuzuura/" class="link-card" target="_blank">
+            <i class="fab fa-facebook"></i> Facebook
+        </a>
+
+        <a href="https://sg.wantedly.com/id/ryosuke_tsuzuura" class="link-card" target="_blank">
+            <span class="wantedly-icon"><i class="fas fa-w"></i></span> Wantedly
+        </a>
+        
+        <a href="https://jp.linkedin.com/in/ryosuke-tsuzuura-076583229?trk=public_profile_browsemap" class="link-card" target="_blank">
+            <i class="fab fa-linkedin"></i> LinkedIn
+        </a>
+
+        <a href="https://github.com/tsuzuura-jp" class="link-card" target="_blank">
+            <i class="fab fa-github"></i> GitHub
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
