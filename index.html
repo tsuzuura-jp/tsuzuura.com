@@ -1,18 +1,9 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-K29VJTTKLK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-K29VJTTKLK');
-    </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tsuzuura.com</title>
+    <title>tsuzuura.com | Portfolio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -38,6 +29,7 @@
             text-align: center;
         }
         
+        /* タイトルのスタイル */
         h1 { 
             font-size: 2.2rem; 
             font-weight: 800;
@@ -65,7 +57,9 @@
             border-color: var(--accent-color);
             color: var(--accent-color);
         }
-        .link-card i {
+
+        /* アイコン共通設定 */
+        .link-card i, .custom-icon {
             font-size: 1.4rem;
             width: 32px;
             margin-right: 12px;
@@ -78,10 +72,26 @@
         .fa-facebook { color: #1877f2; }
         .wantedly-icon { color: #00a4bb; font-style: normal; font-weight: bold; }
 
+        /* LIG用カスタムアイコンスタイル */
+        .lig-icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #000000; /* 黒背景 */
+            color: #ffffff;           /* 白文字 */
+            text-align: center;
+            line-height: 24px;
+            border-radius: 4px;       /* 少し角丸 */
+            font-size: 16px;
+            font-weight: 900;         /* 極太 */
+            margin-right: 12px;
+            font-family: 'Inter', sans-serif;
+        }
+
         /* レスポンシブ対応 */
         @media (max-width: 480px) {
             .container { padding: 20px; }
-            h1 { font-size: 1.8rem; } /* スマホでは少しだけ小さく調整 */
+            h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -91,20 +101,24 @@
     <h1>tsuzuura.com</h1>
     
     <div class="links">
-        <a href="https://www.facebook.com/tsuzuura/" class="link-card" target="_blank">
-            <i class="fab fa-facebook"></i> Facebook
-        </a>
-
-        <a href="https://sg.wantedly.com/id/ryosuke_tsuzuura" class="link-card" target="_blank">
-            <span class="wantedly-icon"><i class="fas fa-w"></i></span> Wantedly
-        </a>
-        
-        <a href="https://jp.linkedin.com/in/ryosuke-tsuzuura-076583229?trk=public_profile_browsemap" class="link-card" target="_blank">
+        <a href="https://www.linkedin.com/in/あなたのID" class="link-card" target="_blank">
             <i class="fab fa-linkedin"></i> LinkedIn
         </a>
-
+        
+        <a href="https://www.wantedly.com/id/あなたのID" class="link-card" target="_blank">
+            <span class="wantedly-icon custom-icon">W</span> Wantedly
+        </a>
+        
         <a href="https://github.com/tsuzuura-jp" class="link-card" target="_blank">
             <i class="fab fa-github"></i> GitHub
+        </a>
+        
+        <a href="https://www.facebook.com/あなたのID" class="link-card" target="_blank">
+            <i class="fab fa-facebook"></i> Facebook
+        </a>
+        
+        <a href="https://liginc.co.jp/author/tsuzuura_ryosuke" class="link-card" target="_blank">
+            <span class="lig-icon">L</span> LIG Blog (Past Work)
         </a>
     </div>
 </div>
