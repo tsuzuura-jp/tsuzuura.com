@@ -158,11 +158,19 @@
         tbody th.scale-trigger {
             cursor: pointer;
             color: var(--accent-color);
-            transition: background-color 0.15s ease;
-        }
-        tbody th.scale-trigger:hover {
-            background-color: #eef6fd;
             text-decoration: underline;
+            text-decoration-thickness: 1.5px;
+            text-underline-offset: 3px;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+        tbody th.scale-trigger:hover,
+        tbody th.scale-trigger:focus-visible {
+            background-color: #eef6fd;
+            color: #0669b8;
+            outline: none;
+        }
+        tbody th.scale-trigger:focus-visible {
+            box-shadow: inset 0 0 0 2px var(--accent-color);
         }
         tbody td {
             font-size: 0.95rem;
@@ -449,7 +457,6 @@
             "G": "G"
         };
 
-        // メジャースケール基準の調号定義
         const MAJOR_KEY_SIGNATURE_INFO = {
             "C":  { vexKey: "C",  accidentalsByLetter: {} },
             "G":  { vexKey: "G",  accidentalsByLetter: { f: "#" } },
@@ -466,8 +473,6 @@
             "G♭": { vexKey: "Gb", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b", g: "b", c: "b" } }
         };
 
-        // 平行調（ナチュラルマイナーの調号＝そのマイナーキーの調号）を導出するための対応表
-        // 例: Key = A の Natural Minor は C メジャーと同じ調号、Key = A♭ の Natural Minor は C♭/B メジャー相当など
         const RELATIVE_MAJOR_KEY_FOR_MINOR = {
             "C":  "E♭",
             "G":  "B♭",
@@ -479,9 +484,9 @@
             "F":  "A♭",
             "B♭": "D♭",
             "E♭": "G♭",
-            "A♭": "B",
-            "D♭": "E",
-            "G♭": "A"
+            "A♭": "E♭",
+            "D♭": "A♭",
+            "G♭": "D♭"
         };
 
         const KEY_TO_PARAM = {
@@ -679,7 +684,6 @@
             return [...ascendingNotes, ...descendingNotes];
         }
 
-        // 五線譜の左端・幅は固定したまま、最初の音符のX座標（noteStartX）だけを調号最大（6個）の基準に揃える
         function computeAlignedStaveLayout(Stave, vexKey, totalWidth) {
             const staveX = 10;
             const staveWidth = Math.max(400, totalWidth - staveX - 14);
@@ -763,7 +767,7 @@
 
         function updateStaffVisibility(selectedKey) {
             const staffSections = document.getElementById("staff-sections");
-            const triggers = document.querySelectorAll(".scale-trigger");
+            const triggers = document.querySelectorAll("tbody th");
             const isKeyless = selectedKey === "—";
 
             if (staffSections) {
@@ -774,9 +778,13 @@
                 if (isKeyless) {
                     th.classList.remove("scale-trigger");
                     th.removeAttribute("title");
+                    th.removeAttribute("tabindex");
+                    th.removeAttribute("role");
                 } else {
                     th.classList.add("scale-trigger");
                     th.title = `${th.textContent} の五線譜へ移動`;
+                    th.tabIndex = 0;
+                    th.setAttribute("role", "button");
                 }
             });
         }
@@ -792,11 +800,24 @@
 
                 const th = document.createElement("th");
                 th.textContent = scale.name;
-                th.addEventListener("click", () => {
+                if (!isKeyless) {
+                    th.classList.add("scale-trigger");
+                    th.title = `${scale.name} の五線譜へ移動`;
+                    th.tabIndex = 0;
+                    th.setAttribute("role", "button");
+                }
+                const jumpToStaff = () => {
                     if (keySelect.value === "—") return;
                     const target = document.getElementById(scale.targetId);
                     if (target) {
                         target.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                };
+                th.addEventListener("click", jumpToStaff);
+                th.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        jumpToStaff();
                     }
                 });
                 tr.appendChild(th);
