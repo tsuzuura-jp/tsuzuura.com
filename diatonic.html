@@ -485,6 +485,8 @@
             Object.entries(KEY_TO_PARAM).map(([keyLabel, param]) => [param.toLowerCase(), keyLabel])
         );
 
+        const HIGH_OCTAVE_KEYS = new Set(["A", "A♭", "G"]);
+
         const PREFER_FLAT_KEYS = new Set(["F", "B♭", "E♭", "A♭", "D♭", "G♭"]);
 
         const SCALES = [
@@ -626,7 +628,10 @@
 
         function buildScalePitchSequence(selectedKey, scale) {
             const tonicPitch = KEY_ROOT_PITCH[selectedKey];
-            const baseOctave = tonicPitch >= 7 ? 3 : 4;
+            let baseOctave = tonicPitch >= 7 ? 3 : 4;
+            if (HIGH_OCTAVE_KEYS.has(selectedKey)) {
+                baseOctave += 1;
+            }
             const topOctave = baseOctave + 1;
 
             const ascSpelled7 = spellScaleNotes(selectedKey, scale.intervals);
@@ -648,12 +653,12 @@
             const staveX = 10;
             const staveWidth = Math.max(400, totalWidth - staveX - 14);
 
-            const maxKeySigStave = new Stave(staveX, 16, staveWidth);
+            const maxKeySigStave = new Stave(staveX, 24, staveWidth);
             maxKeySigStave.addClef("treble");
             maxKeySigStave.addKeySignature("Gb");
             const targetNoteStartX = maxKeySigStave.getNoteStartX();
 
-            const stave = new Stave(staveX, 16, staveWidth);
+            const stave = new Stave(staveX, 24, staveWidth);
             stave.addClef("treble");
             stave.addKeySignature(vexKey);
             if (typeof stave.setNoteStartX === "function") {
@@ -681,7 +686,7 @@
             const { Renderer, Stave, StaveNote, Accidental, Voice, Formatter, Beam } = window.Vex.Flow;
             const availableWidth = container.clientWidth || 760;
             const width = Math.max(820, availableWidth);
-            const height = 144;
+            const height = 156;
 
             const renderer = new Renderer(container, Renderer.Backends.SVG);
             renderer.resize(width, height);
