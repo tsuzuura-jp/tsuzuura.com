@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unified Diatonic Table - tsuzuura.com</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.5/build/cjs/vexflow.js"></script>
     <style>
         :root {
             --bg-color: #f8f9fa;
@@ -19,12 +20,15 @@
         *::after {
             box-sizing: border-box;
         }
+        html {
+            scroll-behavior: smooth;
+        }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 48px 16px 40px;
+            padding: 0 16px 64px;
             min-height: 100vh;
             min-height: 100svh;
             display: flex;
@@ -36,11 +40,23 @@
             width: 100%;
             max-width: 920px;
         }
+
+        /* スクロールしても見えたままにする上部エリア */
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background-color: var(--bg-color);
+            padding-top: 24px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(225, 228, 232, 0.7);
+            margin-bottom: 20px;
+        }
         h1 {
             font-size: 2rem;
             font-weight: 800;
             letter-spacing: -0.02em;
-            margin: 0 0 12px;
+            margin: 0 0 8px;
             text-align: center;
             line-height: 1.2;
         }
@@ -57,7 +73,7 @@
             font-weight: 700;
             color: var(--muted-color);
             text-align: center;
-            margin: 0 0 22px;
+            margin: 0 0 14px;
             letter-spacing: 0.01em;
         }
         .controls {
@@ -65,7 +81,7 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
-            margin-bottom: 24px;
+            margin-bottom: 0;
         }
         .controls label {
             font-weight: 600;
@@ -88,6 +104,7 @@
             border-color: var(--accent-color);
             box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.12);
         }
+
         .table-scroll {
             width: 100%;
             overflow-x: auto;
@@ -96,6 +113,7 @@
             border: 1px solid var(--border-color);
             border-radius: 12px;
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+            scroll-margin-top: 170px;
         }
         table {
             width: 100%;
@@ -137,6 +155,15 @@
             padding-right: 10px;
             font-size: 0.9rem;
         }
+        tbody th.scale-trigger {
+            cursor: pointer;
+            color: var(--accent-color);
+            transition: background-color 0.15s ease;
+        }
+        tbody th.scale-trigger:hover {
+            background-color: #eef6fd;
+            text-decoration: underline;
+        }
         tbody td {
             font-size: 0.95rem;
             font-weight: 600;
@@ -154,36 +181,100 @@
             bottom: -0.22em;
         }
 
+        /* 五線譜セクション */
+        .staff-sections {
+            margin-top: 36px;
+            display: grid;
+            gap: 20px;
+        }
+        .staff-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px 20px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+            scroll-margin-top: 170px;
+        }
+        .staff-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+        .staff-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+        .back-to-top {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .back-to-top:hover {
+            text-decoration: underline;
+        }
+        .staff-canvas-wrap {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .staff-canvas-wrap svg {
+            display: block;
+            height: auto;
+        }
+
         /* スマホ幅（480px以下）で index.html と h1 位置・サイズを揃える */
         @media (max-width: 480px) {
             body {
-                padding: 32px 16px 28px;
+                padding: 0 16px 48px;
+            }
+            .sticky-top {
+                padding-top: 20px;
+                padding-bottom: 12px;
+                margin-bottom: 16px;
             }
             h1 {
                 font-size: 1.8rem;
-                margin: 0 0 10px;
+                margin: 0 0 6px;
             }
             .page-title {
                 font-size: 0.95rem;
-                margin: 0 0 18px;
+                margin: 0 0 12px;
+            }
+            .table-scroll,
+            .staff-card {
+                scroll-margin-top: 152px;
+            }
+            .staff-card {
+                padding: 14px 14px;
             }
         }
 
         /* スマホ横向きでは横スクロールなしで収まりやすく調整 */
         @media (orientation: landscape) and (max-height: 500px) {
             body {
-                padding: 12px 12px;
+                padding: 0 12px 24px;
+            }
+            .sticky-top {
+                padding-top: 8px;
+                padding-bottom: 8px;
+                margin-bottom: 10px;
             }
             h1 {
                 font-size: 1.4rem;
-                margin: 0 0 4px;
+                margin: 0 0 2px;
             }
             .page-title {
                 font-size: 0.85rem;
-                margin: 0 0 10px;
+                margin: 0 0 8px;
             }
-            .controls {
-                margin-bottom: 12px;
+            .table-scroll,
+            .staff-card {
+                scroll-margin-top: 112px;
             }
             table {
                 min-width: 0;
@@ -217,28 +308,30 @@
     </style>
 </head>
 <body>
-    <div class="page-wrap">
-        <h1><a href="index.html">tsuzuura.com</a></h1>
-        <h2 class="page-title">Unified Diatonic Table</h2>
+    <div id="top" class="page-wrap">
+        <div class="sticky-top">
+            <h1><a href="index.html">tsuzuura.com</a></h1>
+            <h2 class="page-title">Unified Diatonic Table</h2>
 
-        <div class="controls">
-            <label for="key-select">Key:</label>
-            <select id="key-select" aria-label="Select Key">
-                <option value="—" selected>—</option>
-                <option value="C">C</option>
-                <option value="F">F</option>
-                <option value="B♭">B♭</option>
-                <option value="E♭">E♭</option>
-                <option value="A♭">A♭</option>
-                <option value="D♭">D♭</option>
-                <option value="G♭">G♭</option>
-                <option value="F♯">F♯</option>
-                <option value="B">B</option>
-                <option value="E">E</option>
-                <option value="A">A</option>
-                <option value="D">D</option>
-                <option value="G">G</option>
-            </select>
+            <div class="controls">
+                <label for="key-select">Key:</label>
+                <select id="key-select" aria-label="Select Key">
+                    <option value="—" selected>—</option>
+                    <option value="C">C</option>
+                    <option value="F">F</option>
+                    <option value="B♭">B♭</option>
+                    <option value="E♭">E♭</option>
+                    <option value="A♭">A♭</option>
+                    <option value="D♭">D♭</option>
+                    <option value="G♭">G♭</option>
+                    <option value="F♯">F♯</option>
+                    <option value="B">B</option>
+                    <option value="E">E</option>
+                    <option value="A">A</option>
+                    <option value="D">D</option>
+                    <option value="G">G</option>
+                </select>
+            </div>
         </div>
 
         <div class="table-scroll">
@@ -268,6 +361,40 @@
                 <tbody id="diatonic-tbody"></tbody>
             </table>
         </div>
+
+        <section id="staff-sections" class="staff-sections" aria-label="Scale Staff Notation">
+            <article id="staff-major" class="staff-card">
+                <div class="staff-header">
+                    <h3 class="staff-title">Major</h3>
+                    <a href="#top" class="back-to-top">↑ Top</a>
+                </div>
+                <div id="canvas-major" class="staff-canvas-wrap"></div>
+            </article>
+
+            <article id="staff-melodic-minor" class="staff-card">
+                <div class="staff-header">
+                    <h3 class="staff-title">Melodic Minor</h3>
+                    <a href="#top" class="back-to-top">↑ Top</a>
+                </div>
+                <div id="canvas-melodic-minor" class="staff-canvas-wrap"></div>
+            </article>
+
+            <article id="staff-harmonic-minor" class="staff-card">
+                <div class="staff-header">
+                    <h3 class="staff-title">Harmonic Minor</h3>
+                    <a href="#top" class="back-to-top">↑ Top</a>
+                </div>
+                <div id="canvas-harmonic-minor" class="staff-canvas-wrap"></div>
+            </article>
+
+            <article id="staff-natural-minor" class="staff-card">
+                <div class="staff-header">
+                    <h3 class="staff-title">Natural Minor</h3>
+                    <a href="#top" class="back-to-top">↑ Top</a>
+                </div>
+                <div id="canvas-natural-minor" class="staff-canvas-wrap"></div>
+            </article>
+        </section>
     </div>
 
     <script>
@@ -275,7 +402,6 @@
         const MAJOR_DEGREE_SEMITONES = [0, 2, 4, 5, 7, 9, 11];
         const LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
 
-        // ピッチ（0〜11）に対して使用可能な異名同音表記
         const PITCH_SPELLINGS = {
             0:  ["C", "B♯", "D♭♭"],
             1:  ["C♯", "D♭"],
@@ -323,30 +449,108 @@
             "G": "G"
         };
 
+        // メジャースケール基準の調号定義
+        const MAJOR_KEY_SIGNATURE_INFO = {
+            "C":  { vexKey: "C",  accidentalsByLetter: {} },
+            "G":  { vexKey: "G",  accidentalsByLetter: { f: "#" } },
+            "D":  { vexKey: "D",  accidentalsByLetter: { f: "#", c: "#" } },
+            "A":  { vexKey: "A",  accidentalsByLetter: { f: "#", c: "#", g: "#" } },
+            "E":  { vexKey: "E",  accidentalsByLetter: { f: "#", c: "#", g: "#", d: "#" } },
+            "B":  { vexKey: "B",  accidentalsByLetter: { f: "#", c: "#", g: "#", d: "#", a: "#" } },
+            "F♯": { vexKey: "F#", accidentalsByLetter: { f: "#", c: "#", g: "#", d: "#", a: "#", e: "#" } },
+            "F":  { vexKey: "F",  accidentalsByLetter: { b: "b" } },
+            "B♭": { vexKey: "Bb", accidentalsByLetter: { b: "b", e: "b" } },
+            "E♭": { vexKey: "Eb", accidentalsByLetter: { b: "b", e: "b", a: "b" } },
+            "A♭": { vexKey: "Ab", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b" } },
+            "D♭": { vexKey: "Db", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b", g: "b" } },
+            "G♭": { vexKey: "Gb", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b", g: "b", c: "b" } }
+        };
+
+        // 平行調（ナチュラルマイナーの調号＝そのマイナーキーの調号）を導出するための対応表
+        // 例: Key = A の Natural Minor は C メジャーと同じ調号、Key = A♭ の Natural Minor は C♭/B メジャー相当など
+        const RELATIVE_MAJOR_KEY_FOR_MINOR = {
+            "C":  "E♭",
+            "G":  "B♭",
+            "D":  "F",
+            "A":  "C",
+            "E":  "G",
+            "B":  "D",
+            "F♯": "A",
+            "F":  "A♭",
+            "B♭": "D♭",
+            "E♭": "G♭",
+            "A♭": "B",
+            "D♭": "E",
+            "G♭": "A"
+        };
+
+        const KEY_TO_PARAM = {
+            "C": "C",
+            "F": "F",
+            "B♭": "Bb",
+            "E♭": "Eb",
+            "A♭": "Ab",
+            "D♭": "Db",
+            "G♭": "Gb",
+            "F♯": "Fs",
+            "B": "B",
+            "E": "E",
+            "A": "A",
+            "D": "D",
+            "G": "G"
+        };
+
+        const PARAM_TO_KEY = Object.fromEntries(
+            Object.entries(KEY_TO_PARAM).map(([keyLabel, param]) => [param.toLowerCase(), keyLabel])
+        );
+
+        const HIGH_OCTAVE_KEYS = new Set(["A", "A♭", "G"]);
+
         const PREFER_FLAT_KEYS = new Set(["F", "B♭", "E♭", "A♭", "D♭", "G♭"]);
 
         const SCALES = [
             {
                 name: "Major",
+                keySigMode: "major",
+                targetId: "staff-major",
+                canvasId: "canvas-major",
                 intervals: [0, 2, 4, 5, 7, 9, 11],
                 qualities: ["maj7", "m7", "m7", "maj7", "7", "m7", "m7b5"]
             },
             {
                 name: "Melodic Minor",
+                keySigMode: "minor",
+                targetId: "staff-melodic-minor",
+                canvasId: "canvas-melodic-minor",
                 intervals: [0, 2, 3, 5, 7, 9, 11],
+                descendingIntervals: [0, 2, 3, 5, 7, 8, 10],
                 qualities: ["mmaj7", "m7", "augmaj7", "7", "7", "m7b5", "m7b5"]
             },
             {
                 name: "Harmonic Minor",
+                keySigMode: "minor",
+                targetId: "staff-harmonic-minor",
+                canvasId: "canvas-harmonic-minor",
                 intervals: [0, 2, 3, 5, 7, 8, 11],
                 qualities: ["mmaj7", "m7b5", "augmaj7", "m7", "7", "maj7", "dim7"]
             },
             {
                 name: "Natural Minor",
+                keySigMode: "minor",
+                targetId: "staff-natural-minor",
+                canvasId: "canvas-natural-minor",
                 intervals: [0, 2, 3, 5, 7, 8, 10],
                 qualities: ["m7", "m7b5", "maj7", "m7", "m7", "maj7", "7"]
             }
         ];
+
+        function getScaleKeySignatureInfo(selectedKey, scale) {
+            if (scale.keySigMode === "minor") {
+                const relMajor = RELATIVE_MAJOR_KEY_FOR_MINOR[selectedKey] || selectedKey;
+                return MAJOR_KEY_SIGNATURE_INFO[relMajor] || { vexKey: "C", accidentalsByLetter: {} };
+            }
+            return MAJOR_KEY_SIGNATURE_INFO[selectedKey] || { vexKey: "C", accidentalsByLetter: {} };
+        }
 
         function formatChord(rootLabel, quality) {
             switch (quality) {
@@ -385,13 +589,11 @@
             const startLetterIndex = LETTERS.indexOf(KEY_START_LETTER[selectedKey]);
             const preferFlat = PREFER_FLAT_KEYS.has(selectedKey);
 
-            // 1スケール内で各音名（A〜G）が重複しないよう、Ⅰ〜Ⅶに順番に文字名を割り当てる
             return intervals.map((interval, idx) => {
                 const pitch = (tonicPitch + interval) % 12;
                 const targetLetter = LETTERS[(startLetterIndex + idx) % 7];
                 const candidates = PITCH_SPELLINGS[pitch];
 
-                // 1. 期待する音名（targetLetter）で始まる表記を最優先
                 const matchingLetter = candidates.filter((name) => name.startsWith(targetLetter));
                 if (matchingLetter.length > 0) {
                     const preferred = matchingLetter.find((name) =>
@@ -400,11 +602,182 @@
                     return preferred || matchingLetter[0];
                 }
 
-                // 2. 見つからない場合はキーの♭/♯傾向に合う表記をフォールバック
                 const fallback = candidates.find((name) =>
                     preferFlat ? name.includes("♭") : !name.includes("♭")
                 );
                 return fallback || candidates[0];
+            });
+        }
+
+        function parseNoteLabel(noteLabel) {
+            const letter = noteLabel[0].toLowerCase();
+            let accidental = "";
+            if (noteLabel.includes("♭♭")) accidental = "bb";
+            else if (noteLabel.includes("♯♯")) accidental = "##";
+            else if (noteLabel.includes("♭")) accidental = "b";
+            else if (noteLabel.includes("♯")) accidental = "#";
+
+            return { letter, accidental };
+        }
+
+        function resolveNoteAccidental(letter, accidental, keySigAccidentals, currentStateByLetter) {
+            const sigAcc = keySigAccidentals[letter] || "";
+            const prevAcc = currentStateByLetter[letter] !== undefined
+                ? currentStateByLetter[letter]
+                : sigAcc;
+
+            if (accidental === prevAcc) {
+                return null;
+            }
+
+            currentStateByLetter[letter] = accidental;
+
+            if (accidental === "" && sigAcc !== "") {
+                return "n";
+            }
+
+            if (accidental !== "") {
+                return accidental;
+            }
+
+            return null;
+        }
+
+        function mapSpelledToOctaves(spelled7, baseOctave) {
+            const rootNote = spelled7[0];
+            const baseLetterIdx = LETTERS.indexOf(rootNote[0]);
+
+            return spelled7.map((noteLabel) => {
+                const currentLetterIdx = LETTERS.indexOf(noteLabel[0]);
+                const letterWrapped = currentLetterIdx < baseLetterIdx ? 1 : 0;
+                return {
+                    label: noteLabel,
+                    octave: baseOctave + letterWrapped
+                };
+            });
+        }
+
+        function buildScalePitchSequence(selectedKey, scale) {
+            const tonicPitch = KEY_ROOT_PITCH[selectedKey];
+            let baseOctave = tonicPitch >= 7 ? 3 : 4;
+            if (HIGH_OCTAVE_KEYS.has(selectedKey)) {
+                baseOctave += 1;
+            }
+            const topOctave = baseOctave + 1;
+
+            const ascSpelled7 = spellScaleNotes(selectedKey, scale.intervals);
+            const ascSeven = mapSpelledToOctaves(ascSpelled7, baseOctave);
+            const topRoot = { label: ascSpelled7[0], octave: topOctave };
+
+            const ascendingNotes = [...ascSeven, topRoot];
+
+            const descIntervals = scale.descendingIntervals || scale.intervals;
+            const descSpelled7 = spellScaleNotes(selectedKey, descIntervals);
+            const descSevenReversed = mapSpelledToOctaves(descSpelled7, baseOctave).reverse();
+            const descendingNotes = [topRoot, ...descSevenReversed];
+
+            return [...ascendingNotes, ...descendingNotes];
+        }
+
+        // 五線譜の左端・幅は固定したまま、最初の音符のX座標（noteStartX）だけを調号最大（6個）の基準に揃える
+        function computeAlignedStaveLayout(Stave, vexKey, totalWidth) {
+            const staveX = 10;
+            const staveWidth = Math.max(400, totalWidth - staveX - 14);
+
+            const maxKeySigStave = new Stave(staveX, 24, staveWidth);
+            maxKeySigStave.addClef("treble");
+            maxKeySigStave.addKeySignature("Gb");
+            const targetNoteStartX = maxKeySigStave.getNoteStartX();
+
+            const stave = new Stave(staveX, 24, staveWidth);
+            stave.addClef("treble");
+            stave.addKeySignature(vexKey);
+            if (typeof stave.setNoteStartX === "function") {
+                stave.setNoteStartX(targetNoteStartX);
+            }
+
+            const formatterWidth = Math.max(320, staveWidth - (targetNoteStartX - staveX) - 24);
+            return { stave, formatterWidth };
+        }
+
+        function renderStaffForScale(selectedKey, scale) {
+            const container = document.getElementById(scale.canvasId);
+            if (!container) return;
+
+            container.innerHTML = "";
+
+            const notes = buildScalePitchSequence(selectedKey, scale);
+            const keySigInfo = getScaleKeySignatureInfo(selectedKey, scale);
+
+            if (!window.Vex || !window.Vex.Flow) {
+                container.textContent = notes.map((n) => n.label).join(" - ");
+                return;
+            }
+
+            const { Renderer, Stave, StaveNote, Accidental, Voice, Formatter, Beam } = window.Vex.Flow;
+            const availableWidth = container.clientWidth || 760;
+            const width = Math.max(820, availableWidth);
+            const height = 156;
+
+            const renderer = new Renderer(container, Renderer.Backends.SVG);
+            renderer.resize(width, height);
+            const context = renderer.getContext();
+
+            const { stave, formatterWidth } = computeAlignedStaveLayout(Stave, keySigInfo.vexKey, width);
+            stave.setContext(context).draw();
+
+            const currentStateByLetter = {};
+            const vfNotes = notes.map((item) => {
+                const { letter, accidental } = parseNoteLabel(item.label);
+                const vexKey = `${letter}${accidental}/${item.octave}`;
+                const note = new StaveNote({ keys: [vexKey], duration: "8" });
+
+                const neededAccidental = resolveNoteAccidental(
+                    letter,
+                    accidental,
+                    keySigInfo.accidentalsByLetter,
+                    currentStateByLetter
+                );
+                if (neededAccidental) {
+                    note.addModifier(new Accidental(neededAccidental));
+                }
+                return note;
+            });
+
+            const beams = [];
+            for (let i = 0; i + 3 < vfNotes.length; i += 4) {
+                beams.push(new Beam(vfNotes.slice(i, i + 4)));
+            }
+
+            const voice = new Voice({ num_beats: notes.length, beat_value: 8 });
+            voice.setStrict(false);
+            voice.addTickables(vfNotes);
+
+            new Formatter().joinVoices([voice]).format([voice], formatterWidth);
+            voice.draw(context, stave);
+
+            beams.forEach((beam) => {
+                beam.setContext(context).draw();
+            });
+        }
+
+        function updateStaffVisibility(selectedKey) {
+            const staffSections = document.getElementById("staff-sections");
+            const triggers = document.querySelectorAll(".scale-trigger");
+            const isKeyless = selectedKey === "—";
+
+            if (staffSections) {
+                staffSections.style.display = isKeyless ? "none" : "grid";
+            }
+
+            triggers.forEach((th) => {
+                if (isKeyless) {
+                    th.classList.remove("scale-trigger");
+                    th.removeAttribute("title");
+                } else {
+                    th.classList.add("scale-trigger");
+                    th.title = `${th.textContent} の五線譜へ移動`;
+                }
             });
         }
 
@@ -419,6 +792,13 @@
 
                 const th = document.createElement("th");
                 th.textContent = scale.name;
+                th.addEventListener("click", () => {
+                    if (keySelect.value === "—") return;
+                    const target = document.getElementById(scale.targetId);
+                    if (target) {
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                });
                 tr.appendChild(th);
 
                 const spelledNotes = isKeyless ? null : spellScaleNotes(selectedKey, scale.intervals);
@@ -436,14 +816,60 @@
 
                 tbody.appendChild(tr);
             });
+
+            updateStaffVisibility(selectedKey);
+
+            if (!isKeyless) {
+                SCALES.forEach((scale) => {
+                    renderStaffForScale(selectedKey, scale);
+                });
+            }
+        }
+
+        function syncUrlWithKey(selectedKey) {
+            const url = new URL(window.location.href);
+            const paramValue = KEY_TO_PARAM[selectedKey];
+
+            if (paramValue) {
+                url.searchParams.set("key", paramValue);
+            } else {
+                url.searchParams.delete("key");
+            }
+
+            window.history.replaceState({}, "", url);
+        }
+
+        function getInitialKeyFromUrl(selectElement) {
+            const params = new URLSearchParams(window.location.search);
+            const rawKey = params.get("key");
+            if (!rawKey) return "—";
+
+            const normalized = rawKey.trim().toLowerCase();
+            if (PARAM_TO_KEY[normalized]) {
+                return PARAM_TO_KEY[normalized];
+            }
+
+            const selectOptions = Array.from(selectElement.options).map((opt) => opt.value);
+            return selectOptions.includes(rawKey) ? rawKey : "—";
         }
 
         const keySelect = document.getElementById("key-select");
         keySelect.addEventListener("change", (e) => {
-            renderTable(e.target.value);
+            const selectedKey = e.target.value;
+            syncUrlWithKey(selectedKey);
+            renderTable(selectedKey);
         });
 
-        renderTable(keySelect.value);
+        window.addEventListener("resize", () => {
+            if (keySelect.value === "—") return;
+            SCALES.forEach((scale) => {
+                renderStaffForScale(keySelect.value, scale);
+            });
+        });
+
+        const initialKey = getInitialKeyFromUrl(keySelect);
+        keySelect.value = initialKey;
+        renderTable(initialKey);
     </script>
 </body>
 </html>
