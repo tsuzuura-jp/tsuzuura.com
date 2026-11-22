@@ -180,6 +180,12 @@
         tbody td {
             font-size: 0.86rem;
             font-weight: 600;
+            text-align: center;
+        }
+        .chord-item {
+            display: inline-block;
+            min-width: 4.4em;
+            text-align: left;
         }
         sub, sup {
             font-size: 0.72em;
@@ -259,6 +265,9 @@
             tbody td {
                 font-size: 0.78rem;
             }
+            .chord-item {
+                min-width: 4.1em;
+            }
         }
 
         /* スマホ幅（480px以下）で index.html と h1 位置・サイズを揃える */
@@ -299,6 +308,9 @@
             }
             tbody td {
                 font-size: 0.7rem;
+            }
+            .chord-item {
+                min-width: 3.9em;
             }
             .staff-card {
                 padding: 14px 14px;
@@ -582,24 +594,34 @@
         }
 
         function formatChord(rootLabel, quality) {
+            let body = `${rootLabel}`;
             switch (quality) {
                 case "maj7":
-                    return `${rootLabel}<sub>△7</sub>`;
+                    body = `${rootLabel}<sub>△7</sub>`;
+                    break;
                 case "m7":
-                    return `${rootLabel}<sub>m7</sub>`;
+                    body = `${rootLabel}<sub>m7</sub>`;
+                    break;
                 case "7":
-                    return `${rootLabel}<sub>7</sub>`;
+                    body = `${rootLabel}<sub>7</sub>`;
+                    break;
                 case "m7b5":
-                    return `${rootLabel}<sub>m7</sub><sup>(♭5)</sup>`;
+                    body = `${rootLabel}<sub>m7</sub><sup>(♭5)</sup>`;
+                    break;
                 case "mmaj7":
-                    return `${rootLabel}<sub>m△7</sub>`;
+                    body = `${rootLabel}<sub>m△7</sub>`;
+                    break;
                 case "augmaj7":
-                    return `${rootLabel}<sub>aug△7</sub>`;
+                    body = `${rootLabel}<sub>aug△7</sub>`;
+                    break;
                 case "dim7":
-                    return `${rootLabel}<sub>dim7</sub>`;
+                    body = `${rootLabel}<sub>dim7</sub>`;
+                    break;
                 default:
-                    return `${rootLabel}`;
+                    body = `${rootLabel}`;
+                    break;
             }
+            return `<span class="chord-item">${body}</span>`;
         }
 
         function getKeylessDegreeLabel(degreeIndex, scaleInterval) {
