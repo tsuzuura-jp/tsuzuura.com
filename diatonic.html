@@ -38,7 +38,8 @@
         }
         .page-wrap {
             width: 100%;
-            max-width: 920px;
+            max-width: 960px;
+            margin: 0 auto;
         }
 
         /* スクロールしても見えたままにする上部エリア */
@@ -46,11 +47,13 @@
             position: sticky;
             top: 0;
             z-index: 20;
+            width: 100%;
             background-color: var(--bg-color);
             padding-top: 24px;
             padding-bottom: 14px;
             border-bottom: 1px solid rgba(225, 228, 232, 0.7);
             margin-bottom: 20px;
+            text-align: center;
         }
         h1 {
             font-size: 2rem;
@@ -80,8 +83,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            width: 100%;
             gap: 10px;
-            margin-bottom: 0;
+            margin: 0 auto;
         }
         .controls label {
             font-weight: 600;
@@ -119,21 +123,22 @@
             width: 100%;
             table-layout: fixed;
             border-collapse: collapse;
-            min-width: 720px;
         }
         col.scale-col {
-            width: 16%;
+            width: 20%;
         }
         col.degree-col {
-            width: 12%;
+            width: 11.4285%;
         }
         th, td {
             border-bottom: 1px solid var(--border-color);
             border-right: 1px solid var(--border-color);
-            padding: 12px 6px;
+            padding: 11px 4px;
             text-align: center;
             white-space: nowrap;
             vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         th:last-child, td:last-child {
             border-right: none;
@@ -145,15 +150,15 @@
         thead th {
             background-color: #f1f3f5;
             font-weight: 700;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
         }
         tbody th {
             background-color: #fafbfc;
             font-weight: 700;
             text-align: left;
-            padding-left: 14px;
-            padding-right: 10px;
-            font-size: 0.9rem;
+            padding-left: 12px;
+            padding-right: 8px;
+            font-size: 0.85rem;
         }
         tbody th.scale-trigger {
             cursor: pointer;
@@ -173,7 +178,7 @@
             box-shadow: inset 0 0 0 2px var(--accent-color);
         }
         tbody td {
-            font-size: 0.95rem;
+            font-size: 0.86rem;
             font-weight: 600;
         }
         sub, sup {
@@ -235,10 +240,31 @@
             height: auto;
         }
 
+        /* 狭めの横幅（開発者ツール表示時やタブレット幅）でも表が全列収まりやすく調整 */
+        @media (max-width: 780px) {
+            col.scale-col {
+                width: 21%;
+            }
+            col.degree-col {
+                width: 11.2857%;
+            }
+            th, td {
+                padding: 9px 2px;
+            }
+            tbody th {
+                padding-left: 8px;
+                padding-right: 4px;
+                font-size: 0.78rem;
+            }
+            tbody td {
+                font-size: 0.78rem;
+            }
+        }
+
         /* スマホ幅（480px以下）で index.html と h1 位置・サイズを揃える */
         @media (max-width: 480px) {
             body {
-                padding: 0 16px 48px;
+                padding: 0 12px 48px;
             }
             .sticky-top {
                 padding-top: 20px;
@@ -256,6 +282,23 @@
             .table-scroll,
             .staff-card {
                 scroll-margin-top: 152px;
+            }
+            col.scale-col {
+                width: 22%;
+            }
+            col.degree-col {
+                width: 11.1428%;
+            }
+            th, td {
+                padding: 8px 1px;
+            }
+            tbody th {
+                padding-left: 6px;
+                padding-right: 4px;
+                font-size: 0.7rem;
+            }
+            tbody td {
+                font-size: 0.7rem;
             }
             .staff-card {
                 padding: 14px 14px;
@@ -284,33 +327,14 @@
             .staff-card {
                 scroll-margin-top: 112px;
             }
-            table {
-                min-width: 0;
-            }
             th, td {
                 padding: 6px 2px;
-                font-size: 0.76rem;
-            }
-            tbody th {
-                padding-left: 6px;
-                padding-right: 6px;
                 font-size: 0.74rem;
             }
-        }
-
-        /* 狭めの横幅でも表がコンパクトに収まるよう調整 */
-        @media (max-width: 720px) and (orientation: landscape) {
-            table {
-                min-width: 0;
-            }
-            th, td {
-                padding: 7px 2px;
-                font-size: 0.78rem;
-            }
             tbody th {
                 padding-left: 6px;
-                padding-right: 6px;
-                font-size: 0.76rem;
+                padding-right: 4px;
+                font-size: 0.72rem;
             }
         }
     </style>
