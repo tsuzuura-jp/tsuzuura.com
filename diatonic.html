@@ -465,6 +465,26 @@
             "G♭": { vexKey: "Gb", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b", g: "b", c: "b" } }
         };
 
+        const KEY_TO_PARAM = {
+            "C": "C",
+            "F": "F",
+            "B♭": "Bb",
+            "E♭": "Eb",
+            "A♭": "Ab",
+            "D♭": "Db",
+            "G♭": "Gb",
+            "F♯": "Fs",
+            "B": "B",
+            "E": "E",
+            "A": "A",
+            "D": "D",
+            "G": "G"
+        };
+
+        const PARAM_TO_KEY = Object.fromEntries(
+            Object.entries(KEY_TO_PARAM).map(([keyLabel, param]) => [param.toLowerCase(), keyLabel])
+        );
+
         const PREFER_FLAT_KEYS = new Set(["F", "B♭", "E♭", "A♭", "D♭", "G♭"]);
 
         const SCALES = [
@@ -623,7 +643,7 @@
             return [...ascendingNotes, ...descendingNotes];
         }
 
-// 五線譜の左端・幅は固定したまま、最初の音符のX座標（noteStartX）だけを調号最大（6個）の基準に揃える
+        // 五線譜の左端・幅は固定したまま、最初の音符のX座標（noteStartX）だけを調号最大（6個）の基準に揃える
         function computeAlignedStaveLayout(Stave, vexKey, totalWidth) {
             const staveX = 10;
             const staveWidth = Math.max(400, totalWidth - staveX - 14);
@@ -770,9 +790,38 @@
             }
         }
 
+        function syncUrlWithKey(selectedKey) {
+            const url = new URL(window.location.href);
+            const paramValue = KEY_TO_PARAM[selectedKey];
+
+            if (paramValue) {
+                url.searchParams.set("key", paramValue);
+            } else {
+                url.searchParams.delete("key");
+            }
+
+            window.history.replaceState({}, "", url);
+        }
+
+        function getInitialKeyFromUrl(selectElement) {
+            const params = new URLSearchParams(window.location.search);
+            const rawKey = params.get("key");
+            if (!rawKey) return "—";
+
+            const normalized = rawKey.trim().toLowerCase();
+            if (PARAM_TO_KEY[normalized]) {
+                return PARAM_TO_KEY[normalized];
+            }
+
+            const selectOptions = Array.from(selectElement.options).map((opt) => opt.value);
+            return selectOptions.includes(rawKey) ? rawKey : "—";
+        }
+
         const keySelect = document.getElementById("key-select");
         keySelect.addEventListener("change", (e) => {
-            renderTable(e.target.value);
+            const selectedKey = e.target.value;
+            syncUrlWithKey(selectedKey);
+            renderTable(selectedKey);
         });
 
         window.addEventListener("resize", () => {
@@ -782,7 +831,9 @@
             });
         });
 
-        renderTable(keySelect.value);
+        const initialKey = getInitialKeyFromUrl(keySelect);
+        keySelect.value = initialKey;
+        renderTable(initialKey);
     </script>
 </body>
 </html>
