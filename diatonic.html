@@ -272,12 +272,24 @@
 
     <script>
         const DEGREES = ["Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ", "Ⅵ", "Ⅶ"];
-        // メジャースケール各音度の基準半音数（C=0, D=2, E=4, F=5, G=7, A=9, B=11）
         const MAJOR_DEGREE_SEMITONES = [0, 2, 4, 5, 7, 9, 11];
+        const LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
 
-        // 半音階（0 = C, 1 = C#/Db, ..., 11 = B）
-        const NOTE_NAMES_SHARP = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
-        const NOTE_NAMES_FLAT  = ["C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"];
+        // ピッチ（0〜11）に対して使用可能な異名同音表記
+        const PITCH_SPELLINGS = {
+            0:  ["C", "B♯", "D♭♭"],
+            1:  ["C♯", "D♭"],
+            2:  ["D", "C♯♯", "E♭♭"],
+            3:  ["E♭", "D♯", "F♭♭"],
+            4:  ["E", "F♭", "D♯♯"],
+            5:  ["F", "E♯", "G♭♭"],
+            6:  ["F♯", "G♭"],
+            7:  ["G", "F♯♯", "A♭♭"],
+            8:  ["A♭", "G♯"],
+            9:  ["A", "G♯♯", "B♭♭"],
+            10: ["B♭", "A♯", "C♭♭"],
+            11: ["B", "C♭", "A♯♯"]
+        };
 
         const KEY_ROOT_PITCH = {
             "C": 0,
@@ -295,10 +307,24 @@
             "G": 7
         };
 
-        // ♭系を優先するキーと♯系を優先するキー
+        const KEY_START_LETTER = {
+            "C": "C",
+            "F": "F",
+            "B♭": "B",
+            "E♭": "E",
+            "A♭": "A",
+            "D♭": "D",
+            "G♭": "G",
+            "F♯": "F",
+            "B": "B",
+            "E": "E",
+            "A": "A",
+            "D": "D",
+            "G": "G"
+        };
+
         const PREFER_FLAT_KEYS = new Set(["F", "B♭", "E♭", "A♭", "D♭", "G♭"]);
 
-        // 各スケールの半音インターバル（ルートからの半音数）と7thコード性質
         const SCALES = [
             {
                 name: "Major",
@@ -354,15 +380,39 @@
             return baseDegree;
         }
 
+        function spellScaleNotes(selectedKey, intervals) {
+            const tonicPitch = KEY_ROOT_PITCH[selectedKey];
+            const startLetterIndex = LETTERS.indexOf(KEY_START_LETTER[selectedKey]);
+            const preferFlat = PREFER_FLAT_KEYS.has(selectedKey);
+
+            // 1スケール内で各音名（A〜G）が重複しないよう、Ⅰ〜Ⅶに順番に文字名を割り当てる
+            return intervals.map((interval, idx) => {
+                const pitch = (tonicPitch + interval) % 12;
+                const targetLetter = LETTERS[(startLetterIndex + idx) % 7];
+                const candidates = PITCH_SPELLINGS[pitch];
+
+                // 1. 期待する音名（targetLetter）で始まる表記を最優先
+                const matchingLetter = candidates.filter((name) => name.startsWith(targetLetter));
+                if (matchingLetter.length > 0) {
+                    const preferred = matchingLetter.find((name) =>
+                        preferFlat ? name.includes("♭") : !name.includes("♭")
+                    );
+                    return preferred || matchingLetter[0];
+                }
+
+                // 2. 見つからない場合はキーの♭/♯傾向に合う表記をフォールバック
+                const fallback = candidates.find((name) =>
+                    preferFlat ? name.includes("♭") : !name.includes("♭")
+                );
+                return fallback || candidates[0];
+            });
+        }
+
         function renderTable(selectedKey) {
             const tbody = document.getElementById("diatonic-tbody");
             tbody.innerHTML = "";
 
             const isKeyless = selectedKey === "—";
-            const tonicPitch = isKeyless ? null : KEY_ROOT_PITCH[selectedKey];
-            const palette = (!isKeyless && PREFER_FLAT_KEYS.has(selectedKey))
-                ? NOTE_NAMES_FLAT
-                : NOTE_NAMES_SHARP;
 
             SCALES.forEach((scale) => {
                 const tr = document.createElement("tr");
@@ -371,15 +421,15 @@
                 th.textContent = scale.name;
                 tr.appendChild(th);
 
+                const spelledNotes = isKeyless ? null : spellScaleNotes(selectedKey, scale.intervals);
+
                 scale.intervals.forEach((interval, idx) => {
                     const td = document.createElement("td");
                     if (isKeyless) {
                         const degreeLabel = getKeylessDegreeLabel(idx, interval);
                         td.innerHTML = formatChord(degreeLabel, scale.qualities[idx]);
                     } else {
-                        const pitch = (tonicPitch + interval) % 12;
-                        const rootNote = palette[pitch];
-                        td.innerHTML = formatChord(rootNote, scale.qualities[idx]);
+                        td.innerHTML = formatChord(spelledNotes[idx], scale.qualities[idx]);
                     }
                     tr.appendChild(td);
                 });
