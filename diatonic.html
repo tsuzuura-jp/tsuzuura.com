@@ -449,7 +449,8 @@
             "G": "G"
         };
 
-        const KEY_SIGNATURE_INFO = {
+        // メジャースケール基準の調号定義
+        const MAJOR_KEY_SIGNATURE_INFO = {
             "C":  { vexKey: "C",  accidentalsByLetter: {} },
             "G":  { vexKey: "G",  accidentalsByLetter: { f: "#" } },
             "D":  { vexKey: "D",  accidentalsByLetter: { f: "#", c: "#" } },
@@ -463,6 +464,24 @@
             "A♭": { vexKey: "Ab", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b" } },
             "D♭": { vexKey: "Db", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b", g: "b" } },
             "G♭": { vexKey: "Gb", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b", g: "b", c: "b" } }
+        };
+
+        // 平行調（ナチュラルマイナーの調号＝そのマイナーキーの調号）を導出するための対応表
+        // 例: Key = A の Natural Minor は C メジャーと同じ調号、Key = A♭ の Natural Minor は C♭/B メジャー相当など
+        const RELATIVE_MAJOR_KEY_FOR_MINOR = {
+            "C":  "E♭",
+            "G":  "B♭",
+            "D":  "F",
+            "A":  "C",
+            "E":  "G",
+            "B":  "D",
+            "F♯": "A",
+            "F":  "A♭",
+            "B♭": "D♭",
+            "E♭": "G♭",
+            "A♭": "B",
+            "D♭": "E",
+            "G♭": "A"
         };
 
         const KEY_TO_PARAM = {
@@ -492,6 +511,7 @@
         const SCALES = [
             {
                 name: "Major",
+                keySigMode: "major",
                 targetId: "staff-major",
                 canvasId: "canvas-major",
                 intervals: [0, 2, 4, 5, 7, 9, 11],
@@ -499,6 +519,7 @@
             },
             {
                 name: "Melodic Minor",
+                keySigMode: "minor",
                 targetId: "staff-melodic-minor",
                 canvasId: "canvas-melodic-minor",
                 intervals: [0, 2, 3, 5, 7, 9, 11],
@@ -507,6 +528,7 @@
             },
             {
                 name: "Harmonic Minor",
+                keySigMode: "minor",
                 targetId: "staff-harmonic-minor",
                 canvasId: "canvas-harmonic-minor",
                 intervals: [0, 2, 3, 5, 7, 8, 11],
@@ -514,12 +536,21 @@
             },
             {
                 name: "Natural Minor",
+                keySigMode: "minor",
                 targetId: "staff-natural-minor",
                 canvasId: "canvas-natural-minor",
                 intervals: [0, 2, 3, 5, 7, 8, 10],
                 qualities: ["m7", "m7b5", "maj7", "m7", "m7", "maj7", "7"]
             }
         ];
+
+        function getScaleKeySignatureInfo(selectedKey, scale) {
+            if (scale.keySigMode === "minor") {
+                const relMajor = RELATIVE_MAJOR_KEY_FOR_MINOR[selectedKey] || selectedKey;
+                return MAJOR_KEY_SIGNATURE_INFO[relMajor] || { vexKey: "C", accidentalsByLetter: {} };
+            }
+            return MAJOR_KEY_SIGNATURE_INFO[selectedKey] || { vexKey: "C", accidentalsByLetter: {} };
+        }
 
         function formatChord(rootLabel, quality) {
             switch (quality) {
@@ -676,7 +707,7 @@
             container.innerHTML = "";
 
             const notes = buildScalePitchSequence(selectedKey, scale);
-            const keySigInfo = KEY_SIGNATURE_INFO[selectedKey] || { vexKey: "C", accidentalsByLetter: {} };
+            const keySigInfo = getScaleKeySignatureInfo(selectedKey, scale);
 
             if (!window.Vex || !window.Vex.Flow) {
                 container.textContent = notes.map((n) => n.label).join(" - ");
