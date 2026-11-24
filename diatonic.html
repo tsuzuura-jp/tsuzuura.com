@@ -529,6 +529,21 @@
             "G":        "G"
         };
 
+        // 統合表（コードネーム）で同主調ルート統一に使う開始音・フラット優先設定
+        const CHORD_TABLE_MINOR_START_LETTER = {
+            "A♭ (G♯)": "A",
+            "D♭ (C♯)": "D",
+            "F♯ (G♭)": "F"
+        };
+
+        const CHORD_TABLE_PREFER_FLAT_KEYS = new Set([
+            "F",
+            "B♭",
+            "E♭",
+            "A♭ (G♯)",
+            "D♭ (C♯)"
+        ]);
+
         const MAJOR_KEY_SIGNATURE_INFO = {
             "C":        { vexKey: "C",  accidentalsByLetter: {} },
             "G":        { vexKey: "G",  accidentalsByLetter: { f: "#" } },
@@ -561,7 +576,7 @@
             "D♭ (C♯)": "E"
         };
 
-        // マイナー系スケールで # ベース（シャープ優先）でスペルするキー
+        // 五線譜のマイナー系スケールで # ベース（シャープ優先）でスペルするキー
         const SHARP_MINOR_KEYS = new Set([
             "A♭ (G♯)",
             "D♭ (C♯)",
@@ -639,11 +654,24 @@
             return Boolean(scale && scale.keySigMode === "minor");
         }
 
-        function shouldPreferFlat(selectedKey, scale) {
+        function shouldPreferFlat(selectedKey, scale, options = {}) {
+            if (options.forChordTable) {
+                return CHORD_TABLE_PREFER_FLAT_KEYS.has(selectedKey);
+            }
             if (isMinorScale(scale)) {
                 return !SHARP_MINOR_KEYS.has(selectedKey);
             }
             return PREFER_FLAT_MAJOR_KEYS.has(selectedKey);
+        }
+
+        function getStartLetter(selectedKey, scale, options = {}) {
+            if (isMinorScale(scale)) {
+                if (options.forChordTable && CHORD_TABLE_MINOR_START_LETTER[selectedKey]) {
+                    return CHORD_TABLE_MINOR_START_LETTER[selectedKey];
+                }
+                return MINOR_START_LETTER[selectedKey];
+            }
+            return MAJOR_START_LETTER[selectedKey];
         }
 
         function getScaleKeySignatureInfo(selectedKey, scale) {
@@ -696,13 +724,11 @@
             return baseDegree;
         }
 
-        function spellScaleNotes(selectedKey, intervals, scale = null) {
+        function spellScaleNotes(selectedKey, intervals, scale = null, options = {}) {
             const tonicPitch = KEY_ROOT_PITCH[selectedKey];
-            const startLetter = isMinorScale(scale)
-                ? MINOR_START_LETTER[selectedKey]
-                : MAJOR_START_LETTER[selectedKey];
+            const startLetter = getStartLetter(selectedKey, scale, options);
             const startLetterIndex = LETTERS.indexOf(startLetter);
-            const preferFlat = shouldPreferFlat(selectedKey, scale);
+            const preferFlat = shouldPreferFlat(selectedKey, scale, options);
 
             return intervals.map((interval, idx) => {
                 const pitch = (tonicPitch + interval) % 12;
@@ -948,7 +974,9 @@
                 });
                 tr.appendChild(th);
 
-                const spelledNotes = isKeyless ? null : spellScaleNotes(selectedKey, scale.intervals, scale);
+                const spelledNotes = isKeyless
+                    ? null
+                    : spellScaleNotes(selectedKey, scale.intervals, scale, { forChordTable: true });
 
                 scale.intervals.forEach((interval, idx) => {
                     const td = document.createElement("td");
@@ -983,7 +1011,7 @@
                 url.searchParams.delete("key");
             }
 
-            window.history.replaceState({}, "", url);
+            window.history.replaceState({}, "", url.toString());
         }
 
         function getInitialKeyFromUrl(selectElement) {
