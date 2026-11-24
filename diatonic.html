@@ -22,6 +22,7 @@
         }
         html {
             scroll-behavior: smooth;
+            overflow-x: clip;
         }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -35,10 +36,12 @@
             flex-direction: column;
             align-items: center;
             line-height: 1.5;
+            overflow-x: clip;
         }
         .page-wrap {
             width: 100%;
             max-width: 960px;
+            min-width: 0;
             margin: 0 auto;
         }
 
@@ -48,6 +51,7 @@
             top: 0;
             z-index: 20;
             width: 100%;
+            min-width: 0;
             background-color: var(--bg-color);
             padding-top: 24px;
             padding-bottom: 14px;
@@ -111,6 +115,8 @@
 
         .table-scroll {
             width: 100%;
+            max-width: 100%;
+            min-width: 0;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             background-color: var(--card-bg);
@@ -205,6 +211,8 @@
             margin-top: 36px;
             display: grid;
             gap: 20px;
+            width: 100%;
+            min-width: 0;
         }
         .staff-card {
             background-color: var(--card-bg);
@@ -213,6 +221,10 @@
             padding: 18px 20px;
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
             scroll-margin-top: 170px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            overflow: hidden;
         }
         .staff-header {
             display: flex;
@@ -238,11 +250,14 @@
         }
         .staff-canvas-wrap {
             width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            max-width: 100%;
+            min-width: 0;
+            overflow: hidden;
         }
         .staff-canvas-wrap svg {
             display: block;
+            width: 100%;
+            max-width: 100%;
             height: auto;
         }
 
@@ -313,7 +328,7 @@
                 min-width: 3.9em;
             }
             .staff-card {
-                padding: 14px 14px;
+                padding: 14px 12px;
             }
         }
 
@@ -365,10 +380,9 @@
                     <option value="F">F</option>
                     <option value="B♭">B♭</option>
                     <option value="E♭">E♭</option>
-                    <option value="A♭">A♭</option>
-                    <option value="D♭">D♭</option>
-                    <option value="G♭">G♭</option>
-                    <option value="F♯">F♯</option>
+                    <option value="A♭ (G♯)">A♭ (G♯)</option>
+                    <option value="D♭ (C♯)">D♭ (C♯)</option>
+                    <option value="F♯ (G♭)">F♯ (G♭)</option>
                     <option value="B">B</option>
                     <option value="E">E</option>
                     <option value="A">A</option>
@@ -466,10 +480,9 @@
             "F": 5,
             "B♭": 10,
             "E♭": 3,
-            "A♭": 8,
-            "D♭": 1,
-            "G♭": 6,
-            "F♯": 6,
+            "A♭ (G♯)": 8,
+            "D♭ (C♯)": 1,
+            "F♯ (G♭)": 6,
             "B": 11,
             "E": 4,
             "A": 9,
@@ -477,15 +490,14 @@
             "G": 7
         };
 
-        const KEY_START_LETTER = {
+        const MAJOR_START_LETTER = {
             "C": "C",
             "F": "F",
             "B♭": "B",
             "E♭": "E",
-            "A♭": "A",
-            "D♭": "D",
-            "G♭": "G",
-            "F♯": "F",
+            "A♭ (G♯)": "A",
+            "D♭ (C♯)": "D",
+            "F♯ (G♭)": "F",
             "B": "B",
             "E": "E",
             "A": "A",
@@ -493,47 +505,71 @@
             "G": "G"
         };
 
-        const MAJOR_KEY_SIGNATURE_INFO = {
-            "C":  { vexKey: "C",  accidentalsByLetter: {} },
-            "G":  { vexKey: "G",  accidentalsByLetter: { f: "#" } },
-            "D":  { vexKey: "D",  accidentalsByLetter: { f: "#", c: "#" } },
-            "A":  { vexKey: "A",  accidentalsByLetter: { f: "#", c: "#", g: "#" } },
-            "E":  { vexKey: "E",  accidentalsByLetter: { f: "#", c: "#", g: "#", d: "#" } },
-            "B":  { vexKey: "B",  accidentalsByLetter: { f: "#", c: "#", g: "#", d: "#", a: "#" } },
-            "F♯": { vexKey: "F#", accidentalsByLetter: { f: "#", c: "#", g: "#", d: "#", a: "#", e: "#" } },
-            "F":  { vexKey: "F",  accidentalsByLetter: { b: "b" } },
-            "B♭": { vexKey: "Bb", accidentalsByLetter: { b: "b", e: "b" } },
-            "E♭": { vexKey: "Eb", accidentalsByLetter: { b: "b", e: "b", a: "b" } },
-            "A♭": { vexKey: "Ab", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b" } },
-            "D♭": { vexKey: "Db", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b", g: "b" } },
-            "G♭": { vexKey: "Gb", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b", g: "b", c: "b" } }
+        const MINOR_START_LETTER = {
+            "C":        "C",
+            "F":        "F",
+            "B♭":       "B",
+            "E♭":       "E",
+            "A♭ (G♯)": "G",
+            "D♭ (C♯)": "C",
+            "F♯ (G♭)": "F",
+            "B":        "B",
+            "E":        "E",
+            "A":        "A",
+            "D":        "D",
+            "G":        "G"
         };
 
-        const RELATIVE_MAJOR_KEY_FOR_MINOR = {
-            "C":  "E♭",
-            "G":  "B♭",
-            "D":  "F",
-            "A":  "C",
-            "E":  "G",
-            "B":  "D",
-            "F♯": "A",
-            "F":  "A♭",
-            "B♭": "D♭",
-            "E♭": "G♭",
-            "A♭": "E♭",
-            "D♭": "A♭",
-            "G♭": "D♭"
+        const MAJOR_KEY_SIGNATURE_INFO = {
+            "C":        { vexKey: "C",  accidentalsByLetter: {} },
+            "G":        { vexKey: "G",  accidentalsByLetter: { f: "#" } },
+            "D":        { vexKey: "D",  accidentalsByLetter: { f: "#", c: "#" } },
+            "A":        { vexKey: "A",  accidentalsByLetter: { f: "#", c: "#", g: "#" } },
+            "E":        { vexKey: "E",  accidentalsByLetter: { f: "#", c: "#", g: "#", d: "#" } },
+            "B":        { vexKey: "B",  accidentalsByLetter: { f: "#", c: "#", g: "#", d: "#", a: "#" } },
+            "F♯ (G♭)": { vexKey: "F#", accidentalsByLetter: { f: "#", c: "#", g: "#", d: "#", a: "#", e: "#" } },
+            "F":        { vexKey: "F",  accidentalsByLetter: { b: "b" } },
+            "B♭":       { vexKey: "Bb", accidentalsByLetter: { b: "b", e: "b" } },
+            "E♭":       { vexKey: "Eb", accidentalsByLetter: { b: "b", e: "b", a: "b" } },
+            "A♭ (G♯)": { vexKey: "Ab", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b" } },
+            "D♭ (C♯)": { vexKey: "Db", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b", g: "b" } },
+            "G♭":       { vexKey: "Gb", accidentalsByLetter: { b: "b", e: "b", a: "b", d: "b", g: "b", c: "b" } }
         };
+
+        // マイナー系の調号基準：E♭ minor は ♭6（G♭）、A♭ (G♯) / D♭ (C♯) / F♯ (G♭) は # 側を軸に揃える
+        const RELATIVE_MAJOR_KEY_FOR_MINOR = {
+            "C":        "E♭",
+            "G":        "B♭",
+            "D":        "F",
+            "A":        "C",
+            "E":        "G",
+            "B":        "D",
+            "F♯ (G♭)": "A",
+            "F":        "A♭ (G♯)",
+            "B♭":       "D♭ (C♯)",
+            "E♭":       "G♭",
+            "A♭ (G♯)": "B",
+            "D♭ (C♯)": "E"
+        };
+
+        // マイナー系スケールで # ベース（シャープ優先）でスペルするキー
+        const SHARP_MINOR_KEYS = new Set([
+            "A♭ (G♯)",
+            "D♭ (C♯)",
+            "F♯ (G♭)",
+            "B",
+            "E",
+            "A"
+        ]);
 
         const KEY_TO_PARAM = {
             "C": "C",
             "F": "F",
             "B♭": "Bb",
             "E♭": "Eb",
-            "A♭": "Ab",
-            "D♭": "Db",
-            "G♭": "Gb",
-            "F♯": "Fs",
+            "A♭ (G♯)": "Ab",
+            "D♭ (C♯)": "Db",
+            "F♯ (G♭)": "Fs",
             "B": "B",
             "E": "E",
             "A": "A",
@@ -541,13 +577,18 @@
             "G": "G"
         };
 
-        const PARAM_TO_KEY = Object.fromEntries(
-            Object.entries(KEY_TO_PARAM).map(([keyLabel, param]) => [param.toLowerCase(), keyLabel])
-        );
+        const PARAM_TO_KEY = {
+            ...Object.fromEntries(
+                Object.entries(KEY_TO_PARAM).map(([keyLabel, param]) => [param.toLowerCase(), keyLabel])
+            ),
+            "gs": "A♭ (G♯)",
+            "cs": "D♭ (C♯)",
+            "gb": "F♯ (G♭)"
+        };
 
-        const HIGH_OCTAVE_KEYS = new Set(["A", "A♭", "G"]);
+        const HIGH_OCTAVE_KEYS = new Set(["A", "A♭ (G♯)", "G"]);
 
-        const PREFER_FLAT_KEYS = new Set(["F", "B♭", "E♭", "A♭", "D♭", "G♭"]);
+        const PREFER_FLAT_MAJOR_KEYS = new Set(["F", "B♭", "E♭", "A♭ (G♯)", "D♭ (C♯)"]);
 
         const SCALES = [
             {
@@ -585,8 +626,19 @@
             }
         ];
 
+        function isMinorScale(scale) {
+            return Boolean(scale && scale.keySigMode === "minor");
+        }
+
+        function shouldPreferFlat(selectedKey, scale) {
+            if (isMinorScale(scale)) {
+                return !SHARP_MINOR_KEYS.has(selectedKey);
+            }
+            return PREFER_FLAT_MAJOR_KEYS.has(selectedKey);
+        }
+
         function getScaleKeySignatureInfo(selectedKey, scale) {
-            if (scale.keySigMode === "minor") {
+            if (isMinorScale(scale)) {
                 const relMajor = RELATIVE_MAJOR_KEY_FOR_MINOR[selectedKey] || selectedKey;
                 return MAJOR_KEY_SIGNATURE_INFO[relMajor] || { vexKey: "C", accidentalsByLetter: {} };
             }
@@ -635,10 +687,13 @@
             return baseDegree;
         }
 
-        function spellScaleNotes(selectedKey, intervals) {
+        function spellScaleNotes(selectedKey, intervals, scale = null) {
             const tonicPitch = KEY_ROOT_PITCH[selectedKey];
-            const startLetterIndex = LETTERS.indexOf(KEY_START_LETTER[selectedKey]);
-            const preferFlat = PREFER_FLAT_KEYS.has(selectedKey);
+            const startLetter = isMinorScale(scale)
+                ? MINOR_START_LETTER[selectedKey]
+                : MAJOR_START_LETTER[selectedKey];
+            const startLetterIndex = LETTERS.indexOf(startLetter);
+            const preferFlat = shouldPreferFlat(selectedKey, scale);
 
             return intervals.map((interval, idx) => {
                 const pitch = (tonicPitch + interval) % 12;
@@ -716,14 +771,14 @@
             }
             const topOctave = baseOctave + 1;
 
-            const ascSpelled7 = spellScaleNotes(selectedKey, scale.intervals);
+            const ascSpelled7 = spellScaleNotes(selectedKey, scale.intervals, scale);
             const ascSeven = mapSpelledToOctaves(ascSpelled7, baseOctave);
             const topRoot = { label: ascSpelled7[0], octave: topOctave };
 
             const ascendingNotes = [...ascSeven, topRoot];
 
             const descIntervals = scale.descendingIntervals || scale.intervals;
-            const descSpelled7 = spellScaleNotes(selectedKey, descIntervals);
+            const descSpelled7 = spellScaleNotes(selectedKey, descIntervals, scale);
             const descSevenReversed = mapSpelledToOctaves(descSpelled7, baseOctave).reverse();
             const descendingNotes = [topRoot, ...descSevenReversed];
 
@@ -736,7 +791,7 @@
 
             const maxKeySigStave = new Stave(staveX, 24, staveWidth);
             maxKeySigStave.addClef("treble");
-            maxKeySigStave.addKeySignature("Gb");
+            maxKeySigStave.addKeySignature("F#");
             const targetNoteStartX = maxKeySigStave.getNoteStartX();
 
             const stave = new Stave(staveX, 24, staveWidth);
@@ -748,6 +803,20 @@
 
             const formatterWidth = Math.max(320, staveWidth - (targetNoteStartX - staveX) - 24);
             return { stave, formatterWidth };
+        }
+
+        function makeSvgResponsive(container, width, height) {
+            const svg = container.querySelector("svg");
+            if (!svg) return;
+            if (!svg.getAttribute("viewBox")) {
+                svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+            }
+            svg.removeAttribute("width");
+            svg.removeAttribute("height");
+            svg.style.width = "100%";
+            svg.style.maxWidth = "100%";
+            svg.style.height = "auto";
+            svg.style.display = "block";
         }
 
         function renderStaffForScale(selectedKey, scale) {
@@ -766,7 +835,7 @@
 
             const { Renderer, Stave, StaveNote, Accidental, Voice, Formatter, Beam } = window.Vex.Flow;
             const availableWidth = container.clientWidth || 760;
-            const width = Math.max(820, availableWidth);
+            const width = availableWidth < 820 ? 860 : availableWidth;
             const height = 156;
 
             const renderer = new Renderer(container, Renderer.Backends.SVG);
@@ -809,6 +878,8 @@
             beams.forEach((beam) => {
                 beam.setContext(context).draw();
             });
+
+            makeSvgResponsive(container, width, height);
         }
 
         function updateStaffVisibility(selectedKey) {
@@ -868,7 +939,7 @@
                 });
                 tr.appendChild(th);
 
-                const spelledNotes = isKeyless ? null : spellScaleNotes(selectedKey, scale.intervals);
+                const spelledNotes = isKeyless ? null : spellScaleNotes(selectedKey, scale.intervals, scale);
 
                 scale.intervals.forEach((interval, idx) => {
                     const td = document.createElement("td");
