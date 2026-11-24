@@ -87,11 +87,17 @@ h1 a:hover {
     font-size: 0.95rem;
 }
 .controls select {
+    appearance: none;
+    -webkit-appearance: none;
     background-color: var(--card-bg);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232d3436' d='M2.2 4.2a.75.75 0 0 1 1.06 0L6 6.94l2.74-2.74a.75.75 0 1 1 1.06 1.06l-3.27 3.27a.75.75 0 0 1-1.06 0L2.2 5.26a.75.75 0 0 1 0-1.06z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 12px 12px;
     color: var(--text-color);
     border: 1px solid var(--border-color);
     border-radius: 10px;
-    padding: 8px 14px;
+    padding: 8px 36px 8px 14px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
