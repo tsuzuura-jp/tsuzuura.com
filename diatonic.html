@@ -773,15 +773,11 @@
 
             currentStateByLetter[letter] = accidental;
 
-            if (accidental === "" && sigAcc !== "") {
+            if (accidental === "") {
                 return "n";
             }
 
-            if (accidental !== "") {
-                return accidental;
-            }
-
-            return null;
+            return accidental;
         }
 
         function mapSpelledToOctaves(spelled7, baseOctave) {
