@@ -147,6 +147,18 @@ const HIGH_OCTAVE_KEYS = new Set(["A", "A♭ (G♯)", "G"]);
 
 const PREFER_FLAT_MAJOR_KEYS = new Set(["F", "B♭", "E♭", "A♭ (G♯)", "D♭ (C♯)"]);
 
+const QUALITY_CHORD_INTERVALS = {
+    "maj7":    [0, 4, 7, 11],
+    "m7":      [0, 3, 7, 10],
+    "7":       [0, 4, 7, 10],
+    "m7b5":    [0, 3, 6, 10],
+    "mmaj7":   [0, 3, 7, 11],
+    "augmaj7": [0, 4, 8, 11],
+    "dim7":    [0, 3, 6, 9]
+};
+
+const NATURAL_MINOR_QUALITIES = ["m7", "m7b5", "maj7", "m7", "m7", "maj7", "7"];
+
 const SCALES = [
     {
         name: "Major",
@@ -163,6 +175,7 @@ const SCALES = [
         canvasId: "canvas-melodic-minor",
         intervals: [0, 2, 3, 5, 7, 9, 11],
         descendingIntervals: [0, 2, 3, 5, 7, 8, 10],
+        descendingQualities: NATURAL_MINOR_QUALITIES,
         qualities: ["mmaj7", "m7", "augmaj7", "7", "7", "m7b5", "m7b5"]
     },
     {
@@ -179,7 +192,7 @@ const SCALES = [
         targetId: "staff-natural-minor",
         canvasId: "canvas-natural-minor",
         intervals: [0, 2, 3, 5, 7, 8, 10],
-        qualities: ["m7", "m7b5", "maj7", "m7", "m7", "maj7", "7"]
+        qualities: NATURAL_MINOR_QUALITIES
     }
 ];
 
@@ -257,6 +270,24 @@ function getKeylessDegreeLabel(degreeIndex, scaleInterval) {
     return baseDegree;
 }
 
+function spellPitchForLetter(pitch, targetLetter, preferFlat) {
+    const normalizedPitch = ((pitch % 12) + 12) % 12;
+    const candidates = PITCH_SPELLINGS[normalizedPitch];
+
+    const matchingLetter = candidates.filter((name) => name.startsWith(targetLetter));
+    if (matchingLetter.length > 0) {
+        const preferred = matchingLetter.find((name) =>
+            preferFlat ? name.includes("♭") : !name.includes("♭")
+        );
+        return preferred || matchingLetter[0];
+    }
+
+    const fallback = candidates.find((name) =>
+        preferFlat ? name.includes("♭") : !name.includes("♭")
+    );
+    return fallback || candidates[0];
+}
+
 function spellScaleNotes(selectedKey, intervals, scale = null, options = {}) {
     const tonicPitch = KEY_ROOT_PITCH[selectedKey];
     const startLetter = getStartLetter(selectedKey, scale, options);
@@ -266,20 +297,7 @@ function spellScaleNotes(selectedKey, intervals, scale = null, options = {}) {
     return intervals.map((interval, idx) => {
         const pitch = (tonicPitch + interval) % 12;
         const targetLetter = LETTERS[(startLetterIndex + idx) % 7];
-        const candidates = PITCH_SPELLINGS[pitch];
-
-        const matchingLetter = candidates.filter((name) => name.startsWith(targetLetter));
-        if (matchingLetter.length > 0) {
-            const preferred = matchingLetter.find((name) =>
-                preferFlat ? name.includes("♭") : !name.includes("♭")
-            );
-            return preferred || matchingLetter[0];
-        }
-
-        const fallback = candidates.find((name) =>
-            preferFlat ? name.includes("♭") : !name.includes("♭")
-        );
-        return fallback || candidates[0];
+        return spellPitchForLetter(pitch, targetLetter, preferFlat);
     });
 }
 
@@ -327,12 +345,17 @@ function mapSpelledToOctaves(spelled7, baseOctave) {
     });
 }
 
-function buildScalePitchSequence(selectedKey, scale) {
+function getBaseOctaveForKey(selectedKey) {
     const tonicPitch = KEY_ROOT_PITCH[selectedKey];
     let baseOctave = tonicPitch >= 7 ? 3 : 4;
     if (HIGH_OCTAVE_KEYS.has(selectedKey)) {
         baseOctave += 1;
     }
+    return baseOctave;
+}
+
+function buildScalePitchSequence(selectedKey, scale) {
+    const baseOctave = getBaseOctaveForKey(selectedKey);
     const topOctave = baseOctave + 1;
 
     const ascSpelled7 = spellScaleNotes(selectedKey, scale.intervals, scale);
@@ -347,4 +370,83 @@ function buildScalePitchSequence(selectedKey, scale) {
     const descendingNotes = [topRoot, ...descSevenReversed];
 
     return [...ascendingNotes, ...descendingNotes];
+}
+
+function buildSevenDegreeChords(selectedKey, scale, intervals, qualities, baseOctave) {
+    const tonicPitch = KEY_ROOT_PITCH[selectedKey];
+    const startLetter = getStartLetter(selectedKey, scale);
+    const startLetterIndex = LETTERS.indexOf(startLetter);
+    const preferFlat = shouldPreferFlat(selectedKey, scale);
+    const chordLetterOffsets = [0, 2, 4, 6];
+
+    return intervals.map((degreeInterval, degreeIdx) => {
+        const quality = qualities[degreeIdx];
+        const chordSemitones = QUALITY_CHORD_INTERVALS[quality] || [0, 4, 7, 11];
+        const chordRootPitch = (tonicPitch + degreeInterval) % 12;
+        const chordRootLetterIdx = (startLetterIndex + degreeIdx) % 7;
+        const chordRootLetter = LETTERS[chordRootLetterIdx];
+
+        const rootOctave = baseOctave + (chordRootLetterIdx < startLetterIndex ? 1 : 0);
+        const rootLabel = spellPitchForLetter(chordRootPitch, chordRootLetter, preferFlat);
+
+        const voices = chordSemitones.map((semitoneOffset, voiceIdx) => {
+            const pitch = (chordRootPitch + semitoneOffset) % 12;
+            const letterOffset = chordLetterOffsets[voiceIdx];
+            const targetLetterIdx = (chordRootLetterIdx + letterOffset) % 7;
+            const targetLetter = LETTERS[targetLetterIdx];
+            const octaveWrap = targetLetterIdx < chordRootLetterIdx ? 1 : 0;
+
+            return {
+                label: spellPitchForLetter(pitch, targetLetter, preferFlat),
+                octave: rootOctave + octaveWrap
+            };
+        });
+
+        return {
+            degree: DEGREES[degreeIdx],
+            rootLabel,
+            quality,
+            voices
+        };
+    });
+}
+
+function shiftChordOctave(chord, octaveOffset) {
+    return {
+        ...chord,
+        voices: chord.voices.map((v) => ({
+            ...v,
+            octave: v.octave + octaveOffset
+        }))
+    };
+}
+
+// Scale と同じ上行（Ⅰ〜Ⅶ＋オクターブ上Ⅰ）・下行（オクターブ上Ⅰ＋Ⅶ〜Ⅰ）の16和音を生成
+// Melodic Minor の下行時は descendingIntervals / descendingQualities（Natural Minor コード）を使用
+function buildFourVoiceChordSequence(selectedKey, scale) {
+    const baseOctave = getBaseOctaveForKey(selectedKey);
+
+    const ascSeven = buildSevenDegreeChords(
+        selectedKey,
+        scale,
+        scale.intervals,
+        scale.qualities,
+        baseOctave
+    );
+    const ascTopRoot = shiftChordOctave(ascSeven[0], 1);
+    const ascendingChords = [...ascSeven, ascTopRoot];
+
+    const descIntervals = scale.descendingIntervals || scale.intervals;
+    const descQualities = scale.descendingQualities || scale.qualities;
+    const descSeven = buildSevenDegreeChords(
+        selectedKey,
+        scale,
+        descIntervals,
+        descQualities,
+        baseOctave
+    );
+    const descTopRoot = shiftChordOctave(descSeven[0], 1);
+    const descendingChords = [descTopRoot, ...descSeven.slice().reverse()];
+
+    return [...ascendingChords, ...descendingChords];
 }
