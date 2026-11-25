@@ -7,50 +7,45 @@ on:
       - beta
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: "pages-${{ github.ref_name }}"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Stage site files
+      - name: Prepare deploy directory
         run: |
           rm -rf _site
-          if [ "${{ github.ref_name }}" = "beta" ]; then
-            TARGET_DIR="_site/beta"
-          else
-            TARGET_DIR="_site"
-          fi
-          mkdir -p "$TARGET_DIR"
+          mkdir -p _site
           for item in *; do
-            if [ "$item" != "_site" ]; then
-              cp -R "$item" "$TARGET_DIR/"
+            if [ "$item" != "_site" ] && [ "$item" != "CNAME" ]; then
+              cp -R "$item" "_site/"
             fi
           done
-          if [ -f "CNAME" ] && [ ! -f "_site/CNAME" ]; then
-            cp "CNAME" "_site/CNAME"
-          fi
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+      - name: Deploy main to root
+        if: github.ref_name == 'main'
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: '_site'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          destination_dir: .
+          keep_files: true
+          cname: tsuzuura.com
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy beta to /beta
+        if: github.ref_name == 'beta'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          destination_dir: beta
+          keep_files: true
+          cname: tsuzuura.com
