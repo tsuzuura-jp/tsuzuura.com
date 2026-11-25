@@ -2,7 +2,7 @@
   if (!location.pathname.startsWith('/beta/')) return;
 
   if (!document.title.endsWith('(beta)')) {
-    document.title = `${document.title} (beta)`;
+    document.title = `${document.title} (ver.β)`;
   }
 
   document.querySelectorAll('h1, a').forEach((el) => {
