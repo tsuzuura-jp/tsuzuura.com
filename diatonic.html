@@ -119,6 +119,32 @@
     <script>
         let currentDisplayMode = "scale";
 
+        function getInitialModeFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const rawMode = params.get("mode");
+            if (!rawMode) return "scale";
+            return rawMode.trim().toLowerCase() === "chord" ? "chord" : "scale";
+        }
+
+        function syncUrlState(selectedKey, displayMode) {
+            const url = new URL(window.location.href);
+            const paramValue = KEY_TO_PARAM[selectedKey];
+
+            if (paramValue) {
+                url.searchParams.set("key", paramValue);
+            } else {
+                url.searchParams.delete("key");
+            }
+
+            if (displayMode === "chord") {
+                url.searchParams.set("mode", "chord");
+            } else {
+                url.searchParams.delete("mode");
+            }
+
+            window.history.replaceState({}, "", url.toString());
+        }
+
         function syncModeToggleUI() {
             document.querySelectorAll("#mode-toggle .mode-btn").forEach((btn) => {
                 const isActive = btn.dataset.mode === currentDisplayMode;
@@ -128,14 +154,16 @@
         }
 
         function setDisplayMode(nextMode) {
-            if (keySelect.value !== "C") return;
             if (nextMode !== "scale" && nextMode !== "chord") return;
             currentDisplayMode = nextMode;
             syncModeToggleUI();
+            syncUrlState(keySelect.value, currentDisplayMode);
 
-            SCALES.forEach((scale) => {
-                renderStaffForScale(keySelect.value, scale, currentDisplayMode);
-            });
+            if (keySelect.value === "C") {
+                SCALES.forEach((scale) => {
+                    renderStaffForScale(keySelect.value, scale, currentDisplayMode);
+                });
+            }
         }
 
         function updateStaffVisibility(selectedKey) {
@@ -151,11 +179,6 @@
 
             if (staffModeBar) {
                 staffModeBar.style.display = isKeyC ? "flex" : "none";
-            }
-
-            if (!isKeyC && currentDisplayMode !== "scale") {
-                currentDisplayMode = "scale";
-                syncModeToggleUI();
             }
 
             triggers.forEach((th) => {
@@ -234,19 +257,6 @@
             }
         }
 
-        function syncUrlWithKey(selectedKey) {
-            const url = new URL(window.location.href);
-            const paramValue = KEY_TO_PARAM[selectedKey];
-
-            if (paramValue) {
-                url.searchParams.set("key", paramValue);
-            } else {
-                url.searchParams.delete("key");
-            }
-
-            window.history.replaceState({}, "", url.toString());
-        }
-
         function getInitialKeyFromUrl(selectElement) {
             const params = new URLSearchParams(window.location.search);
             const rawKey = params.get("key");
@@ -264,7 +274,7 @@
         const keySelect = document.getElementById("key-select");
         keySelect.addEventListener("change", (e) => {
             const selectedKey = e.target.value;
-            syncUrlWithKey(selectedKey);
+            syncUrlState(selectedKey, currentDisplayMode);
             renderTable(selectedKey);
         });
 
@@ -282,8 +292,12 @@
             });
         });
 
+        currentDisplayMode = getInitialModeFromUrl();
+        syncModeToggleUI();
+
         const initialKey = getInitialKeyFromUrl(keySelect);
         keySelect.value = initialKey;
+        syncUrlState(initialKey, currentDisplayMode);
         renderTable(initialKey);
     </script>
 <script src="beta-badge.js" defer></script>

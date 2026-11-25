@@ -15,7 +15,7 @@ function computeAlignedStaveLayout(Stave, vexKey, totalWidth) {
     }
 
     const formatterWidth = Math.max(320, staveWidth - (targetNoteStartX - staveX) - 24);
-    return { stave, formatterWidth };
+    return { stave, formatterWidth, staveX, staveWidth, targetNoteStartX };
 }
 
 function makeSvgResponsive(container, width, height) {
@@ -30,6 +30,53 @@ function makeSvgResponsive(container, width, height) {
     svg.style.maxWidth = "100%";
     svg.style.height = "auto";
     svg.style.display = "block";
+}
+
+function getDegreeColumnLeftEdgesInSvg(container, svgWidth) {
+    const headerCells = Array.from(document.querySelectorAll("table thead th"));
+    if (headerCells.length < 8) return null;
+
+    const degreeCells = headerCells.slice(1, 8);
+    const containerRect = container.getBoundingClientRect();
+    if (!containerRect.width) return null;
+
+    const scaleX = svgWidth / containerRect.width;
+    return degreeCells.map((th) => {
+        const rect = th.getBoundingClientRect();
+        // 各ディグリー列の左端の縦線位置をSVG座標へ変換
+        const leftRelative = rect.left - containerRect.left;
+        return leftRelative * scaleX;
+    });
+}
+
+function alignChordNotesToTableLeftBorders(vfNotes, stave, container, svgWidth, layout) {
+    const targetLeftEdges = getDegreeColumnLeftEdgesInSvg(container, svgWidth);
+    if (!targetLeftEdges || targetLeftEdges.length !== vfNotes.length) return;
+
+    const minAllowedX = layout.targetNoteStartX + 12;
+    const maxAllowedX = layout.staveX + layout.staveWidth - 36;
+
+    vfNotes.forEach((note, idx) => {
+        note.setStave(stave);
+        // セル左縦線の少し内側（+10px）に和音の左端を合わせる
+        const rawTargetX = targetLeftEdges[idx] + 10;
+        const desiredLeftX = Math.max(minAllowedX, Math.min(maxAllowedX, rawTargetX));
+
+        const tickContext = typeof note.getTickContext === "function" ? note.getTickContext() : null;
+        if (tickContext && typeof tickContext.setX === "function") {
+            const currentNoteX = typeof note.getAbsoluteX === "function"
+                ? note.getAbsoluteX()
+                : tickContext.getX();
+            const headOffset = currentNoteX - tickContext.getX();
+            tickContext.setX(desiredLeftX - headOffset);
+            return;
+        }
+
+        const currentX = typeof note.getAbsoluteX === "function"
+            ? note.getAbsoluteX()
+            : note.getNoteHeadBeginX();
+        note.setXShift(desiredLeftX - currentX);
+    });
 }
 
 function renderScaleStaff(context, stave, formatterWidth, selectedKey, scale, keySigInfo, VexFlow) {
@@ -71,8 +118,9 @@ function renderScaleStaff(context, stave, formatterWidth, selectedKey, scale, ke
     });
 }
 
-function renderFourVoiceChordStaff(context, stave, formatterWidth, selectedKey, scale, keySigInfo, VexFlow) {
-    const { StaveNote, Accidental, Voice, Formatter, Beam } = VexFlow;
+function renderFourVoiceChordStaff(context, layout, container, svgWidth, selectedKey, scale, keySigInfo, VexFlow) {
+    const { StaveNote, Accidental, Voice, Formatter } = VexFlow;
+    const { stave, formatterWidth } = layout;
     const chords = buildFourVoiceChordSequence(selectedKey, scale);
 
     const currentStateByLetter = {};
@@ -82,7 +130,7 @@ function renderFourVoiceChordStaff(context, stave, formatterWidth, selectedKey, 
             return `${letter}${accidental}/${v.octave}`;
         });
 
-        const note = new StaveNote({ keys, duration: "8" });
+        const note = new StaveNote({ keys, duration: "w" });
 
         chord.voices.forEach((v, index) => {
             const { letter, accidental } = parseNoteLabel(v.label);
@@ -100,22 +148,14 @@ function renderFourVoiceChordStaff(context, stave, formatterWidth, selectedKey, 
         return note;
     });
 
-    // Scale と同様に4つずつ連桁でつなぐ
-    const beams = [];
-    for (let i = 0; i + 3 < vfNotes.length; i += 4) {
-        beams.push(new Beam(vfNotes.slice(i, i + 4)));
-    }
-
-    const voice = new Voice({ num_beats: chords.length, beat_value: 8 });
+    const voice = new Voice({ num_beats: chords.length, beat_value: 1 });
     voice.setStrict(false);
     voice.addTickables(vfNotes);
 
-    new Formatter().joinVoices([voice]).format([voice], formatterWidth);
+    const formatter = new Formatter();
+    formatter.joinVoices([voice]).format([voice], formatterWidth);
+    alignChordNotesToTableLeftBorders(vfNotes, stave, container, svgWidth, layout);
     voice.draw(context, stave);
-
-    beams.forEach((beam) => {
-        beam.setContext(context).draw();
-    });
 }
 
 function renderStaffForScale(selectedKey, scale, displayMode = "scale") {
@@ -143,19 +183,19 @@ function renderStaffForScale(selectedKey, scale, displayMode = "scale") {
     const { Renderer, Stave } = window.Vex.Flow;
     const availableWidth = container.clientWidth || 760;
     const width = availableWidth < 820 ? 860 : availableWidth;
-    const height = activeMode === "chord" ? 186 : 156;
+    const height = 156;
 
     const renderer = new Renderer(container, Renderer.Backends.SVG);
     renderer.resize(width, height);
     const context = renderer.getContext();
 
-    const { stave, formatterWidth } = computeAlignedStaveLayout(Stave, keySigInfo.vexKey, width);
-    stave.setContext(context).draw();
+    const layout = computeAlignedStaveLayout(Stave, keySigInfo.vexKey, width);
+    layout.stave.setContext(context).draw();
 
     if (activeMode === "chord") {
-        renderFourVoiceChordStaff(context, stave, formatterWidth, selectedKey, scale, keySigInfo, window.Vex.Flow);
+        renderFourVoiceChordStaff(context, layout, container, width, selectedKey, scale, keySigInfo, window.Vex.Flow);
     } else {
-        renderScaleStaff(context, stave, formatterWidth, selectedKey, scale, keySigInfo, window.Vex.Flow);
+        renderScaleStaff(context, layout.stave, layout.formatterWidth, selectedKey, scale, keySigInfo, window.Vex.Flow);
     }
 
     makeSvgResponsive(container, width, height);

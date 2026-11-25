@@ -157,8 +157,6 @@ const QUALITY_CHORD_INTERVALS = {
     "dim7":    [0, 3, 6, 9]
 };
 
-const NATURAL_MINOR_QUALITIES = ["m7", "m7b5", "maj7", "m7", "m7", "maj7", "7"];
-
 const SCALES = [
     {
         name: "Major",
@@ -175,7 +173,6 @@ const SCALES = [
         canvasId: "canvas-melodic-minor",
         intervals: [0, 2, 3, 5, 7, 9, 11],
         descendingIntervals: [0, 2, 3, 5, 7, 8, 10],
-        descendingQualities: NATURAL_MINOR_QUALITIES,
         qualities: ["mmaj7", "m7", "augmaj7", "7", "7", "m7b5", "m7b5"]
     },
     {
@@ -192,7 +189,7 @@ const SCALES = [
         targetId: "staff-natural-minor",
         canvasId: "canvas-natural-minor",
         intervals: [0, 2, 3, 5, 7, 8, 10],
-        qualities: NATURAL_MINOR_QUALITIES
+        qualities: ["m7", "m7b5", "maj7", "m7", "m7", "maj7", "7"]
     }
 ];
 
@@ -372,15 +369,18 @@ function buildScalePitchSequence(selectedKey, scale) {
     return [...ascendingNotes, ...descendingNotes];
 }
 
-function buildSevenDegreeChords(selectedKey, scale, intervals, qualities, baseOctave) {
+// 各ディグリー（Ⅰ〜Ⅶ）の上行4声和音（ルート・3度・5度・7度）を生成
+function buildFourVoiceChordSequence(selectedKey, scale) {
     const tonicPitch = KEY_ROOT_PITCH[selectedKey];
     const startLetter = getStartLetter(selectedKey, scale);
     const startLetterIndex = LETTERS.indexOf(startLetter);
     const preferFlat = shouldPreferFlat(selectedKey, scale);
+    const baseOctave = getBaseOctaveForKey(selectedKey);
+
     const chordLetterOffsets = [0, 2, 4, 6];
 
-    return intervals.map((degreeInterval, degreeIdx) => {
-        const quality = qualities[degreeIdx];
+    return scale.intervals.map((degreeInterval, degreeIdx) => {
+        const quality = scale.qualities[degreeIdx];
         const chordSemitones = QUALITY_CHORD_INTERVALS[quality] || [0, 4, 7, 11];
         const chordRootPitch = (tonicPitch + degreeInterval) % 12;
         const chordRootLetterIdx = (startLetterIndex + degreeIdx) % 7;
@@ -409,44 +409,4 @@ function buildSevenDegreeChords(selectedKey, scale, intervals, qualities, baseOc
             voices
         };
     });
-}
-
-function shiftChordOctave(chord, octaveOffset) {
-    return {
-        ...chord,
-        voices: chord.voices.map((v) => ({
-            ...v,
-            octave: v.octave + octaveOffset
-        }))
-    };
-}
-
-// Scale と同じ上行（Ⅰ〜Ⅶ＋オクターブ上Ⅰ）・下行（オクターブ上Ⅰ＋Ⅶ〜Ⅰ）の16和音を生成
-// Melodic Minor の下行時は descendingIntervals / descendingQualities（Natural Minor コード）を使用
-function buildFourVoiceChordSequence(selectedKey, scale) {
-    const baseOctave = getBaseOctaveForKey(selectedKey);
-
-    const ascSeven = buildSevenDegreeChords(
-        selectedKey,
-        scale,
-        scale.intervals,
-        scale.qualities,
-        baseOctave
-    );
-    const ascTopRoot = shiftChordOctave(ascSeven[0], 1);
-    const ascendingChords = [...ascSeven, ascTopRoot];
-
-    const descIntervals = scale.descendingIntervals || scale.intervals;
-    const descQualities = scale.descendingQualities || scale.qualities;
-    const descSeven = buildSevenDegreeChords(
-        selectedKey,
-        scale,
-        descIntervals,
-        descQualities,
-        baseOctave
-    );
-    const descTopRoot = shiftChordOctave(descSeven[0], 1);
-    const descendingChords = [descTopRoot, ...descSeven.slice().reverse()];
-
-    return [...ascendingChords, ...descendingChords];
 }
