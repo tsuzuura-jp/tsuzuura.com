@@ -203,9 +203,51 @@ sub {
     bottom: -0.22em;
 }
 
+/* テーブル下の Scale / Chord 切替バー */
+.staff-mode-bar {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    width: 100%;
+}
+.mode-toggle {
+    display: inline-flex;
+    background-color: #eef1f4;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+}
+.mode-btn {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--muted-color);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.mode-btn:hover {
+    color: var(--text-color);
+}
+.mode-btn.is-active {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.mode-btn:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 1px;
+}
+
 /* 五線譜セクション */
 .staff-sections {
-    margin-top: 36px;
+    margin-top: 16px;
     display: grid;
     gap: 20px;
     width: 100%;
@@ -299,6 +341,13 @@ sub {
     .page-title {
         font-size: 0.95rem;
         margin: 0 0 12px;
+    }
+    .staff-mode-bar {
+        margin-top: 16px;
+    }
+    .mode-btn {
+        font-size: 0.82rem;
+        padding: 5px 11px;
     }
     .table-scroll,
     .staff-card {

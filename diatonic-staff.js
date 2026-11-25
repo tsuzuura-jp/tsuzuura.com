@@ -32,31 +32,9 @@ function makeSvgResponsive(container, width, height) {
     svg.style.display = "block";
 }
 
-function renderStaffForScale(selectedKey, scale) {
-    const container = document.getElementById(scale.canvasId);
-    if (!container) return;
-
-    container.innerHTML = "";
-
+function renderScaleStaff(context, stave, formatterWidth, selectedKey, scale, keySigInfo, VexFlow) {
+    const { StaveNote, Accidental, Voice, Formatter, Beam } = VexFlow;
     const notes = buildScalePitchSequence(selectedKey, scale);
-    const keySigInfo = getScaleKeySignatureInfo(selectedKey, scale);
-
-    if (!window.Vex || !window.Vex.Flow) {
-        container.textContent = notes.map((n) => n.label).join(" - ");
-        return;
-    }
-
-    const { Renderer, Stave, StaveNote, Accidental, Voice, Formatter, Beam } = window.Vex.Flow;
-    const availableWidth = container.clientWidth || 760;
-    const width = availableWidth < 820 ? 860 : availableWidth;
-    const height = 156;
-
-    const renderer = new Renderer(container, Renderer.Backends.SVG);
-    renderer.resize(width, height);
-    const context = renderer.getContext();
-
-    const { stave, formatterWidth } = computeAlignedStaveLayout(Stave, keySigInfo.vexKey, width);
-    stave.setContext(context).draw();
 
     const currentStateByLetter = {};
     const vfNotes = notes.map((item) => {
@@ -91,6 +69,94 @@ function renderStaffForScale(selectedKey, scale) {
     beams.forEach((beam) => {
         beam.setContext(context).draw();
     });
+}
+
+function renderFourVoiceChordStaff(context, stave, formatterWidth, selectedKey, scale, keySigInfo, VexFlow) {
+    const { StaveNote, Accidental, Voice, Formatter, Beam } = VexFlow;
+    const chords = buildFourVoiceChordSequence(selectedKey, scale);
+
+    const currentStateByLetter = {};
+    const vfNotes = chords.map((chord) => {
+        const keys = chord.voices.map((v) => {
+            const { letter, accidental } = parseNoteLabel(v.label);
+            return `${letter}${accidental}/${v.octave}`;
+        });
+
+        const note = new StaveNote({ keys, duration: "8" });
+
+        chord.voices.forEach((v, index) => {
+            const { letter, accidental } = parseNoteLabel(v.label);
+            const neededAccidental = resolveNoteAccidental(
+                letter,
+                accidental,
+                keySigInfo.accidentalsByLetter,
+                currentStateByLetter
+            );
+            if (neededAccidental) {
+                note.addModifier(new Accidental(neededAccidental), index);
+            }
+        });
+
+        return note;
+    });
+
+    // Scale と同様に4つずつ連桁でつなぐ
+    const beams = [];
+    for (let i = 0; i + 3 < vfNotes.length; i += 4) {
+        beams.push(new Beam(vfNotes.slice(i, i + 4)));
+    }
+
+    const voice = new Voice({ num_beats: chords.length, beat_value: 8 });
+    voice.setStrict(false);
+    voice.addTickables(vfNotes);
+
+    new Formatter().joinVoices([voice]).format([voice], formatterWidth);
+    voice.draw(context, stave);
+
+    beams.forEach((beam) => {
+        beam.setContext(context).draw();
+    });
+}
+
+function renderStaffForScale(selectedKey, scale, displayMode = "scale") {
+    const container = document.getElementById(scale.canvasId);
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const activeMode = selectedKey === "C" ? displayMode : "scale";
+    const keySigInfo = getScaleKeySignatureInfo(selectedKey, scale);
+
+    if (!window.Vex || !window.Vex.Flow) {
+        if (activeMode === "chord") {
+            const chords = buildFourVoiceChordSequence(selectedKey, scale);
+            container.textContent = chords
+                .map((c) => `${c.degree}: [${c.voices.map((v) => v.label).join(" ")}]`)
+                .join(" / ");
+        } else {
+            const notes = buildScalePitchSequence(selectedKey, scale);
+            container.textContent = notes.map((n) => n.label).join(" - ");
+        }
+        return;
+    }
+
+    const { Renderer, Stave } = window.Vex.Flow;
+    const availableWidth = container.clientWidth || 760;
+    const width = availableWidth < 820 ? 860 : availableWidth;
+    const height = activeMode === "chord" ? 186 : 156;
+
+    const renderer = new Renderer(container, Renderer.Backends.SVG);
+    renderer.resize(width, height);
+    const context = renderer.getContext();
+
+    const { stave, formatterWidth } = computeAlignedStaveLayout(Stave, keySigInfo.vexKey, width);
+    stave.setContext(context).draw();
+
+    if (activeMode === "chord") {
+        renderFourVoiceChordStaff(context, stave, formatterWidth, selectedKey, scale, keySigInfo, window.Vex.Flow);
+    } else {
+        renderScaleStaff(context, stave, formatterWidth, selectedKey, scale, keySigInfo, window.Vex.Flow);
+    }
 
     makeSvgResponsive(container, width, height);
 }
