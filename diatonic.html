@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Diatonic Table - tsuzuura.com</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-K29VJTTKLK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-K29VJTTKLK');
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="diatonic.css">
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.5/build/cjs/vexflow.js"></script>
+</head>
+<body>
+    <div id="top" class="page-wrap">
+        <div class="sticky-top">
+            <h1><a href="index.html">tsuzuura.com</a></h1>
+            <h2 class="page-title">Unified Diatonic Table</h2>
+
+            <div class="controls">
+                <label for="key-select">Key:</label>
+                <select id="key-select" aria-label="Select Key">
+                    <option value="—" selected>—</option>
+                    <option value="C">C</option>
+                    <option value="F">F</option>
+                    <option value="B♭">B♭</option>
+                    <option value="E♭">E♭</option>
+                    <option value="A♭ (G♯)">A♭ (G♯)</option>
+                    <option value="D♭ (C♯)">D♭ (C♯)</option>
+                    <option value="F♯ (G♭)">F♯ (G♭)</option>
+                    <option value="B">B</option>
+                    <option value="E">E</option>
+                    <option value="A">A</option>
+                    <option value="D">D</option>
+                    <option value="G">G</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-scroll">
+            <table>
+                <colgroup>
+                    <col class="scale-col">
+                    <col class="degree-col">
+                    <col class="degree-col">
+                    <col class="degree-col">
+                    <col class="degree-col">
+                    <col class="degree-col">
+                    <col class="degree-col">
+                    <col class="degree-col">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Scale</th>
+                        <th>Ⅰ</th>
+                        <th>Ⅱ</th>
+                        <th>Ⅲ</th>
+                        <th>Ⅳ</th>
+                        <th>Ⅴ</th>
+                        <th>Ⅵ</th>
+                        <th>Ⅶ</th>
+                    </tr>
+                </thead>
+                <tbody id="diatonic-tbody"></tbody>
+            </table>
+        </div>
+
+        <section id="staff-sections" class="staff-sections" aria-label="Scale Staff Notation">
+            <article id="staff-major" class="staff-card">
+                <div class="staff-header">
+                    <h3 class="staff-title">Major</h3>
+                    <a href="#top" class="back-to-top">↑ Top</a>
+                </div>
+                <div id="canvas-major" class="staff-canvas-wrap"></div>
+            </article>
+
+            <article id="staff-melodic-minor" class="staff-card">
+                <div class="staff-header">
+                    <h3 class="staff-title">Melodic Minor</h3>
+                    <a href="#top" class="back-to-top">↑ Top</a>
+                </div>
+                <div id="canvas-melodic-minor" class="staff-canvas-wrap"></div>
+            </article>
+
+            <article id="staff-harmonic-minor" class="staff-card">
+                <div class="staff-header">
+                    <h3 class="staff-title">Harmonic Minor</h3>
+                    <a href="#top" class="back-to-top">↑ Top</a>
+                </div>
+                <div id="canvas-harmonic-minor" class="staff-canvas-wrap"></div>
+            </article>
+
+            <article id="staff-natural-minor" class="staff-card">
+                <div class="staff-header">
+                    <h3 class="staff-title">Natural Minor</h3>
+                    <a href="#top" class="back-to-top">↑ Top</a>
+                </div>
+                <div id="canvas-natural-minor" class="staff-canvas-wrap"></div>
+            </article>
+        </section>
+    </div>
+
+    <script src="diatonic-theory.js"></script>
+    <script src="diatonic-staff.js"></script>
+    <script>
+        function updateStaffVisibility(selectedKey) {
+            const staffSections = document.getElementById("staff-sections");
+            const triggers = document.querySelectorAll("tbody th");
+            const isKeyless = selectedKey === "—";
+
+            if (staffSections) {
+                staffSections.style.display = isKeyless ? "none" : "grid";
+            }
+
+            triggers.forEach((th) => {
+                if (isKeyless) {
+                    th.classList.remove("scale-trigger");
+                    th.removeAttribute("title");
+                    th.removeAttribute("tabindex");
+                    th.removeAttribute("role");
+                } else {
+                    th.classList.add("scale-trigger");
+                    th.title = `${th.textContent} の五線譜へ移動`;
+                    th.tabIndex = 0;
+                    th.setAttribute("role", "button");
+                }
+            });
+        }
+
+        function renderTable(selectedKey) {
+            const tbody = document.getElementById("diatonic-tbody");
+            tbody.innerHTML = "";
+
+            const isKeyless = selectedKey === "—";
+
+            SCALES.forEach((scale) => {
+                const tr = document.createElement("tr");
+
+                const th = document.createElement("th");
+                th.textContent = scale.name;
+                if (!isKeyless) {
+                    th.classList.add("scale-trigger");
+                    th.title = `${scale.name} の五線譜へ移動`;
+                    th.tabIndex = 0;
+                    th.setAttribute("role", "button");
+                }
+                const jumpToStaff = () => {
+                    if (keySelect.value === "—") return;
+                    const target = document.getElementById(scale.targetId);
+                    if (target) {
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                };
+                th.addEventListener("click", jumpToStaff);
+                th.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        jumpToStaff();
+                    }
+                });
+                tr.appendChild(th);
+
+                const spelledNotes = isKeyless
+                    ? null
+                    : spellScaleNotes(selectedKey, scale.intervals, scale, { forChordTable: true });
+
+                scale.intervals.forEach((interval, idx) => {
+                    const td = document.createElement("td");
+                    if (isKeyless) {
+                        const degreeLabel = getKeylessDegreeLabel(idx, interval);
+                        td.innerHTML = formatChord(degreeLabel, scale.qualities[idx]);
+                    } else {
+                        td.innerHTML = formatChord(spelledNotes[idx], scale.qualities[idx]);
+                    }
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+            });
+
+            updateStaffVisibility(selectedKey);
+
+            if (!isKeyless) {
+                SCALES.forEach((scale) => {
+                    renderStaffForScale(selectedKey, scale);
+                });
+            }
+        }
+
+        function syncUrlWithKey(selectedKey) {
+            const url = new URL(window.location.href);
+            const paramValue = KEY_TO_PARAM[selectedKey];
+
+            if (paramValue) {
+                url.searchParams.set("key", paramValue);
+            } else {
+                url.searchParams.delete("key");
+            }
+
+            window.history.replaceState({}, "", url.toString());
+        }
+
+        function getInitialKeyFromUrl(selectElement) {
+            const params = new URLSearchParams(window.location.search);
+            const rawKey = params.get("key");
+            if (!rawKey) return "—";
+
+            const normalized = rawKey.trim().toLowerCase();
+            if (PARAM_TO_KEY[normalized]) {
+                return PARAM_TO_KEY[normalized];
+            }
+
+            const selectOptions = Array.from(selectElement.options).map((opt) => opt.value);
+            return selectOptions.includes(rawKey) ? rawKey : "—";
+        }
+
+        const keySelect = document.getElementById("key-select");
+        keySelect.addEventListener("change", (e) => {
+            const selectedKey = e.target.value;
+            syncUrlWithKey(selectedKey);
+            renderTable(selectedKey);
+        });
+
+        window.addEventListener("resize", () => {
+            if (keySelect.value === "—") return;
+            SCALES.forEach((scale) => {
+                renderStaffForScale(keySelect.value, scale);
+            });
+        });
+
+        const initialKey = getInitialKeyFromUrl(keySelect);
+        keySelect.value = initialKey;
+        renderTable(initialKey);
+    </script>
+</body>
+</html>

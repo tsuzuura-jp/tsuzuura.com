@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tsuzuura.com</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-K29VJTTKLK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-K29VJTTKLK');
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #2d3436;
+            --accent-color: #0984e3;
+            --card-bg: #ffffff;
+        }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 48px 16px 40px;
+            min-height: 100vh;
+            min-height: 100svh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.5;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        /* Title styles */
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0 0 28px;
+            letter-spacing: -0.02em;
+            color: var(--text-color);
+            line-height: 1.2;
+        }
+        h1 a {
+            color: inherit;
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+        h1 a:hover {
+            opacity: 0.7;
+        }
+
+        .links { display: grid; gap: 16px; }
+        .link-card {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            background: var(--card-bg);
+            border: 1px solid #e1e4e8;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 600;
+            transition: all 0.2s ease;
+            min-height: 56px;
+            line-height: 1.4;
+        }
+        .link-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        /* Brand icon colors */
+        .link-card i,
+        .custom-icon {
+            font-size: 1.1rem;
+            width: 28px;
+            margin-right: 12px;
+            text-align: center;
+        }
+
+        .fa-linkedin { color: #0077b5; }
+        .fa-github { color: #24292e; }
+        .fa-facebook { color: #1877f2; }
+        .fa-music { color: #0984e3; }
+        .wantedly-icon { color: #00a4bb; font-style: normal; font-weight: bold; }
+
+        /* Custom LIG icon styles */
+        .lig-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: #000000;
+            color: #ffffff;
+            text-align: center;
+            line-height: 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 900;
+            margin-right: 12px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Keep link arrows smaller than the text */
+        .link-card-arrow {
+            margin-left: auto;
+            padding-left: 12px;
+            width: auto;
+            flex: 0 0 auto;
+            font-size: 0.75rem;
+            color: #b0b5ba;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 480px) {
+            body {
+                padding: 32px 16px 28px;
+            }
+
+            .container {
+                max-width: 360px;
+            }
+
+            h1 {
+                margin: 0 0 24px;
+                font-size: 1.8rem;
+            }
+
+            .links {
+                gap: 12px;
+            }
+
+            .link-card {
+                min-height: 52px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1><a href="index.html">tsuzuura.com</a></h1>
+
+    <div class="links">
+        <a href="https://www.facebook.com/tsuzuura/" class="link-card" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-facebook" aria-hidden="true"></i>
+            <span>Facebook</span>
+            <i class="fas fa-arrow-up-right-from-square link-card-arrow" aria-hidden="true"></i>
+        </a>
+
+        <a href="https://www.linkedin.com/in/ryosuke-tsuzuura-076583229?trk=public_profile_browsemap&originalSubdomain=jp" class="link-card" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-linkedin" aria-hidden="true"></i>
+            <span>LinkedIn</span>
+            <i class="fas fa-arrow-up-right-from-square link-card-arrow" aria-hidden="true"></i>
+        </a>
+
+        <a href="https://sg.wantedly.com/id/ryosuke_tsuzuura" class="link-card" target="_blank" rel="noopener noreferrer">
+            <span class="wantedly-icon custom-icon">W</span>
+            <span>Wantedly</span>
+            <i class="fas fa-arrow-up-right-from-square link-card-arrow" aria-hidden="true"></i>
+        </a>
+
+        <a href="https://github.com/tsuzuura-jp" class="link-card" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-github" aria-hidden="true"></i>
+            <span>GitHub</span>
+            <i class="fas fa-arrow-up-right-from-square link-card-arrow" aria-hidden="true"></i>
+        </a>
+
+        <a href="https://liginc.co.jp/author/tsuzuura_ryosuke" class="link-card" target="_blank" rel="noopener noreferrer">
+            <span class="lig-icon">L</span>
+            <span>LIG Blog (Past Work)</span>
+            <i class="fas fa-arrow-up-right-from-square link-card-arrow" aria-hidden="true"></i>
+        </a>
+
+        <a href="diatonic.html" class="link-card">
+            <i class="fas fa-music" aria-hidden="true"></i>
+            <span>Unified Diatonic Table</span>
+            <i class="fas fa-arrow-right link-card-arrow" aria-hidden="true"></i>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
