@@ -1,10 +1,3 @@
-const CHORD_FUNCTION_LABELS_BY_SCALE = {
-    "Major": ["T", "SD", "(T)", "SD", "D", "T", "(D)"],
-    "Melodic Minor": ["Tm", "SD", "(Tm)", "SD", "D", "SD", "(D)"],
-    "Harmonic Minor": ["Tm", "SDm", "(Tm)", "SDm", "D", "SDm", "(D)"],
-    "Natural Minor": ["Tm", "SDm", "(Tm)", "SDm", "Dm", "SDm", "SDm/D"]
-};
-
 function computeAlignedStaveLayout(Stave, vexKey, totalWidth) {
     const staveX = 10;
     const staveWidth = Math.max(400, totalWidth - staveX - 14);
@@ -81,36 +74,6 @@ function alignChordNotesToTableLeftBorders(vfNotes, stave, container, svgWidth, 
             ? note.getAbsoluteX()
             : note.getNoteHeadBeginX();
         note.setXShift(desiredLeftX - currentX);
-    });
-}
-
-function drawChordFunctionLabels(container, vfNotes, scale) {
-    const labels = CHORD_FUNCTION_LABELS_BY_SCALE[scale.name];
-    if (!labels) return;
-
-    const svg = container.querySelector("svg");
-    if (!svg) return;
-
-    const svgNs = "http://www.w3.org/2000/svg";
-    vfNotes.forEach((note, idx) => {
-        const label = labels[idx];
-        if (!label) return;
-
-        const noteLeftX = typeof note.getAbsoluteX === "function"
-            ? note.getAbsoluteX()
-            : note.getNoteHeadBeginX();
-        const noteCenterX = noteLeftX + 7;
-
-        const textEl = document.createElementNS(svgNs, "text");
-        textEl.setAttribute("x", String(noteCenterX));
-        textEl.setAttribute("y", "138");
-        textEl.setAttribute("text-anchor", "middle");
-        textEl.setAttribute("fill", "#1e293b");
-        textEl.setAttribute("font-size", "13");
-        textEl.setAttribute("font-weight", "600");
-        textEl.setAttribute("font-family", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
-        textEl.textContent = label;
-        svg.appendChild(textEl);
     });
 }
 
@@ -191,7 +154,6 @@ function renderFourVoiceChordStaff(context, layout, container, svgWidth, selecte
     formatter.joinVoices([voice]).format([voice], formatterWidth);
     alignChordNotesToTableLeftBorders(vfNotes, stave, container, svgWidth, layout);
     voice.draw(context, stave);
-    drawChordFunctionLabels(container, vfNotes, scale);
 }
 
 function renderStaffForScale(selectedKey, scale, displayMode = "scale") {
