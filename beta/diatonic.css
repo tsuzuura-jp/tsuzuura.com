@@ -203,7 +203,7 @@ sub {
     bottom: -0.22em;
 }
 
-/* テーブル下の Scale / Chord 切替バー */
+/* テーブル下中央の Scale / Chord 切替バー */
 .staff-mode-bar {
     display: none;
     justify-content: center;
