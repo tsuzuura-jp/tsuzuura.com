@@ -159,7 +159,7 @@
             syncModeToggleUI();
             syncUrlState(keySelect.value, currentDisplayMode);
 
-            if (keySelect.value === "C") {
+            if (keySelect.value !== "—") {
                 SCALES.forEach((scale) => {
                     renderStaffForScale(keySelect.value, scale, currentDisplayMode);
                 });
@@ -171,14 +171,13 @@
             const staffModeBar = document.getElementById("staff-mode-bar");
             const triggers = document.querySelectorAll("tbody th");
             const isKeyless = selectedKey === "—";
-            const isKeyC = selectedKey === "C";
 
             if (staffSections) {
                 staffSections.style.display = isKeyless ? "none" : "grid";
             }
 
             if (staffModeBar) {
-                staffModeBar.style.display = isKeyC ? "flex" : "none";
+                staffModeBar.style.display = isKeyless ? "none" : "flex";
             }
 
             triggers.forEach((th) => {
@@ -250,9 +249,8 @@
             updateStaffVisibility(selectedKey);
 
             if (!isKeyless) {
-                const activeMode = selectedKey === "C" ? currentDisplayMode : "scale";
                 SCALES.forEach((scale) => {
-                    renderStaffForScale(selectedKey, scale, activeMode);
+                    renderStaffForScale(selectedKey, scale, currentDisplayMode);
                 });
             }
         }
@@ -286,9 +284,8 @@
 
         window.addEventListener("resize", () => {
             if (keySelect.value === "—") return;
-            const activeMode = keySelect.value === "C" ? currentDisplayMode : "scale";
             SCALES.forEach((scale) => {
-                renderStaffForScale(keySelect.value, scale, activeMode);
+                renderStaffForScale(keySelect.value, scale, currentDisplayMode);
             });
         });
 

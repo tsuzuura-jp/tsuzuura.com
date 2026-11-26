@@ -164,7 +164,8 @@ const SCALES = [
         targetId: "staff-major",
         canvasId: "canvas-major",
         intervals: [0, 2, 4, 5, 7, 9, 11],
-        qualities: ["maj7", "m7", "m7", "maj7", "7", "m7", "m7b5"]
+        qualities: ["maj7", "m7", "m7", "maj7", "7", "m7", "m7b5"],
+        functions: ["T", "S.D. sub", "T sub", "S.D.", "D", "T sub", "D sub"]
     },
     {
         name: "Melodic Minor",
@@ -173,7 +174,8 @@ const SCALES = [
         canvasId: "canvas-melodic-minor",
         intervals: [0, 2, 3, 5, 7, 9, 11],
         descendingIntervals: [0, 2, 3, 5, 7, 8, 10],
-        qualities: ["mmaj7", "m7", "maj7s5", "7", "7", "m7b5", "m7b5"]
+        qualities: ["mmaj7", "m7", "maj7s5", "7", "7", "m7b5", "m7b5"],
+        functions: ["T", "S.D. sub", "T sub", "S.D.", "D", "T sub", "D sub"]
     },
     {
         name: "Harmonic Minor",
@@ -181,7 +183,8 @@ const SCALES = [
         targetId: "staff-harmonic-minor",
         canvasId: "canvas-harmonic-minor",
         intervals: [0, 2, 3, 5, 7, 8, 11],
-        qualities: ["mmaj7", "m7b5", "maj7s5", "m7", "7", "maj7", "dim7"]
+        qualities: ["mmaj7", "m7b5", "maj7s5", "m7", "7", "maj7", "dim7"],
+        functions: ["T", "S.D. sub", "T sub", "S.D.", "D", "S.D. sub", "D sub"]
     },
     {
         name: "Natural Minor",
@@ -189,7 +192,8 @@ const SCALES = [
         targetId: "staff-natural-minor",
         canvasId: "canvas-natural-minor",
         intervals: [0, 2, 3, 5, 7, 8, 10],
-        qualities: ["m7", "m7b5", "maj7", "m7", "m7", "maj7", "7"]
+        qualities: ["m7", "m7b5", "maj7", "m7", "m7", "maj7", "7"],
+        functions: ["T", "S.D. sub", "T sub", "S.D.", "D", "S.D. sub", "S.D. sub"]
     }
 ];
 
@@ -223,6 +227,27 @@ function getScaleKeySignatureInfo(selectedKey, scale) {
         return MAJOR_KEY_SIGNATURE_INFO[relMajor] || { vexKey: "C", accidentalsByLetter: {} };
     }
     return MAJOR_KEY_SIGNATURE_INFO[selectedKey] || { vexKey: "C", accidentalsByLetter: {} };
+}
+
+function formatChordText(rootLabel, quality) {
+    switch (quality) {
+        case "maj7":
+            return `${rootLabel}△7`;
+        case "m7":
+            return `${rootLabel}m7`;
+        case "7":
+            return `${rootLabel}7`;
+        case "m7b5":
+            return `${rootLabel}m7(♭5)`;
+        case "maj7s5":
+            return `${rootLabel}△7(#5)`;
+        case "mmaj7":
+            return `${rootLabel}m△7`;
+        case "dim7":
+            return `${rootLabel}dim7`;
+        default:
+            return `${rootLabel}`;
+    }
 }
 
 function formatChord(rootLabel, quality) {
@@ -406,6 +431,8 @@ function buildFourVoiceChordSequence(selectedKey, scale) {
             degree: DEGREES[degreeIdx],
             rootLabel,
             quality,
+            chordText: formatChordText(rootLabel, quality),
+            functionLabel: (scale.functions && scale.functions[degreeIdx]) || "",
             voices
         };
     });
