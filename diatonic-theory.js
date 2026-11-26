@@ -173,7 +173,7 @@ const SCALES = [
         canvasId: "canvas-melodic-minor",
         intervals: [0, 2, 3, 5, 7, 9, 11],
         descendingIntervals: [0, 2, 3, 5, 7, 8, 10],
-        qualities: ["mmaj7", "m7", "augmaj7", "7", "7", "m7b5", "m7b5"]
+        qualities: ["mmaj7", "m7", "maj7s5", "7", "7", "m7b5", "m7b5"]
     },
     {
         name: "Harmonic Minor",
@@ -181,7 +181,7 @@ const SCALES = [
         targetId: "staff-harmonic-minor",
         canvasId: "canvas-harmonic-minor",
         intervals: [0, 2, 3, 5, 7, 8, 11],
-        qualities: ["mmaj7", "m7b5", "augmaj7", "m7", "7", "maj7", "dim7"]
+        qualities: ["mmaj7", "m7b5", "maj7s5", "m7", "7", "maj7", "dim7"]
     },
     {
         name: "Natural Minor",
@@ -240,11 +240,11 @@ function formatChord(rootLabel, quality) {
         case "m7b5":
             body = `${rootLabel}<sub>m7</sub><sup>(♭5)</sup>`;
             break;
+        case "maj7s5":
+            body = `${rootLabel}<sub>△7</sub><sup>(#5)</sup>`;
+            break;
         case "mmaj7":
             body = `${rootLabel}<sub>m△7</sub>`;
-            break;
-        case "augmaj7":
-            body = `${rootLabel}<sub>aug△7</sub>`;
             break;
         case "dim7":
             body = `${rootLabel}<sub>dim7</sub>`;
