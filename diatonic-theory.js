@@ -148,13 +148,13 @@ const HIGH_OCTAVE_KEYS = new Set(["A", "A♭ (G♯)", "G"]);
 const PREFER_FLAT_MAJOR_KEYS = new Set(["F", "B♭", "E♭", "A♭ (G♯)", "D♭ (C♯)"]);
 
 const QUALITY_CHORD_INTERVALS = {
-    "maj7":    [0, 4, 7, 11],
-    "m7":      [0, 3, 7, 10],
-    "7":       [0, 4, 7, 10],
-    "m7b5":    [0, 3, 6, 10],
-    "mmaj7":   [0, 3, 7, 11],
-    "augmaj7": [0, 4, 8, 11],
-    "dim7":    [0, 3, 6, 9]
+    "maj7":   [0, 4, 7, 11],
+    "m7":     [0, 3, 7, 10],
+    "7":      [0, 4, 7, 10],
+    "m7b5":   [0, 3, 6, 10],
+    "mmaj7":  [0, 3, 7, 11],
+    "maj7s5": [0, 4, 8, 11],
+    "dim7":   [0, 3, 6, 9]
 };
 
 const SCALES = [
