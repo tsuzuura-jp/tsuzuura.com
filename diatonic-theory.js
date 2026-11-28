@@ -437,3 +437,41 @@ function buildFourVoiceChordSequence(selectedKey, scale) {
         };
     });
 }
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = {
+        DEGREES,
+        MAJOR_DEGREE_SEMITONES,
+        LETTERS,
+        PITCH_SPELLINGS,
+        KEY_ROOT_PITCH,
+        MAJOR_START_LETTER,
+        MINOR_START_LETTER,
+        CHORD_TABLE_MINOR_START_LETTER,
+        CHORD_TABLE_PREFER_FLAT_KEYS,
+        MAJOR_KEY_SIGNATURE_INFO,
+        RELATIVE_MAJOR_KEY_FOR_MINOR,
+        SHARP_MINOR_KEYS,
+        KEY_TO_PARAM,
+        PARAM_TO_KEY,
+        HIGH_OCTAVE_KEYS,
+        PREFER_FLAT_MAJOR_KEYS,
+        QUALITY_CHORD_INTERVALS,
+        SCALES,
+        isMinorScale,
+        shouldPreferFlat,
+        getStartLetter,
+        getScaleKeySignatureInfo,
+        formatChordText,
+        formatChord,
+        getKeylessDegreeLabel,
+        spellPitchForLetter,
+        spellScaleNotes,
+        parseNoteLabel,
+        resolveNoteAccidental,
+        mapSpelledToOctaves,
+        getBaseOctaveForKey,
+        buildScalePitchSequence,
+        buildFourVoiceChordSequence
+    };
+}
