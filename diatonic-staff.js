@@ -1,8 +1,3 @@
-const MAJOR_C_CHORD_OVERLAY = {
-    chords: ["C△7", "Dm7", "Em7", "F△7", "G7", "Am7", "Bm7(♭5)"],
-    functions: ["T", "SD", "(T)", "SD", "D", "T", "(D)"]
-};
-
 function computeAlignedStaveLayout(Stave, vexKey, totalWidth) {
     const staveX = 10;
     const staveWidth = Math.max(400, totalWidth - staveX - 14);
@@ -83,7 +78,9 @@ function alignChordNotesToTableLeftBorders(vfNotes, stave, container, svgWidth, 
     });
 }
 
-function drawMajorCChordLabels(container, vfNotes) {
+function drawChordLabels(container, vfNotes, chords) {
+    if (!Array.isArray(chords) || chords.length === 0) return;
+
     const svg = container.querySelector("svg");
     if (!svg) return;
 
@@ -91,8 +88,11 @@ function drawMajorCChordLabels(container, vfNotes) {
     const fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
     vfNotes.forEach((note, idx) => {
-        const chordName = MAJOR_C_CHORD_OVERLAY.chords[idx];
-        const funcLabel = MAJOR_C_CHORD_OVERLAY.functions[idx];
+        const chord = chords[idx];
+        if (!chord) return;
+
+        const chordName = chord.chordText;
+        const funcLabel = chord.functionLabel;
 
         const noteLeftX = typeof note.getAbsoluteX === "function"
             ? note.getAbsoluteX()
@@ -105,8 +105,8 @@ function drawMajorCChordLabels(container, vfNotes) {
             chordEl.setAttribute("y", "18");
             chordEl.setAttribute("text-anchor", "middle");
             chordEl.setAttribute("fill", "#1e293b");
-            chordEl.setAttribute("font-size", "13");
-            chordEl.setAttribute("font-weight", "600");
+            chordEl.setAttribute("font-size", "12");
+            chordEl.setAttribute("font-weight", "500");
             chordEl.setAttribute("font-family", fontFamily);
             chordEl.textContent = chordName;
             svg.appendChild(chordEl);
@@ -115,11 +115,11 @@ function drawMajorCChordLabels(container, vfNotes) {
         if (funcLabel) {
             const funcEl = document.createElementNS(svgNs, "text");
             funcEl.setAttribute("x", String(noteCenterX));
-            funcEl.setAttribute("y", "150");
+            funcEl.setAttribute("y", "152");
             funcEl.setAttribute("text-anchor", "middle");
             funcEl.setAttribute("fill", "#1e293b");
-            funcEl.setAttribute("font-size", "13");
-            funcEl.setAttribute("font-weight", "600");
+            funcEl.setAttribute("font-size", "12");
+            funcEl.setAttribute("font-weight", "500");
             funcEl.setAttribute("font-family", fontFamily);
             funcEl.textContent = funcLabel;
             svg.appendChild(funcEl);
@@ -205,9 +205,7 @@ function renderFourVoiceChordStaff(context, layout, container, svgWidth, selecte
     alignChordNotesToTableLeftBorders(vfNotes, stave, container, svgWidth, layout);
     voice.draw(context, stave);
 
-    if (selectedKey === "C" && scale.name === "Major") {
-        drawMajorCChordLabels(container, vfNotes);
-    }
+    drawChordLabels(container, vfNotes, chords);
 }
 
 function renderStaffForScale(selectedKey, scale, displayMode = "scale") {
@@ -216,7 +214,7 @@ function renderStaffForScale(selectedKey, scale, displayMode = "scale") {
 
     container.innerHTML = "";
 
-    const activeMode = selectedKey === "C" ? displayMode : "scale";
+    const activeMode = displayMode;
     const keySigInfo = getScaleKeySignatureInfo(selectedKey, scale);
 
     if (!window.Vex || !window.Vex.Flow) {
