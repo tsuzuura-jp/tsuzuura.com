@@ -72,6 +72,13 @@
             </table>
         </div>
 
+        <div id="staff-mode-bar" class="staff-mode-bar" role="group" aria-label="Staff Display Mode">
+            <div class="mode-toggle" id="mode-toggle">
+                <button type="button" class="mode-btn is-active" data-mode="scale" aria-pressed="true">Scale</button>
+                <button type="button" class="mode-btn" data-mode="chord" aria-pressed="false">Chord</button>
+            </div>
+        </div>
+
         <section id="staff-sections" class="staff-sections" aria-label="Scale Staff Notation">
             <article id="staff-major" class="staff-card">
                 <div class="staff-header">
@@ -110,13 +117,68 @@
     <script src="diatonic-theory.js"></script>
     <script src="diatonic-staff.js"></script>
     <script>
+        let currentDisplayMode = "scale";
+
+        function getInitialModeFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const rawMode = params.get("mode");
+            if (!rawMode) return "scale";
+            return rawMode.trim().toLowerCase() === "chord" ? "chord" : "scale";
+        }
+
+        function syncUrlState(selectedKey, displayMode) {
+            const url = new URL(window.location.href);
+            const paramValue = KEY_TO_PARAM[selectedKey];
+
+            if (paramValue) {
+                url.searchParams.set("key", paramValue);
+            } else {
+                url.searchParams.delete("key");
+            }
+
+            if (displayMode === "chord") {
+                url.searchParams.set("mode", "chord");
+            } else {
+                url.searchParams.delete("mode");
+            }
+
+            window.history.replaceState({}, "", url.toString());
+        }
+
+        function syncModeToggleUI() {
+            document.querySelectorAll("#mode-toggle .mode-btn").forEach((btn) => {
+                const isActive = btn.dataset.mode === currentDisplayMode;
+                btn.classList.toggle("is-active", isActive);
+                btn.setAttribute("aria-pressed", String(isActive));
+            });
+        }
+
+        function setDisplayMode(nextMode) {
+            if (nextMode !== "scale" && nextMode !== "chord") return;
+            currentDisplayMode = nextMode;
+            syncModeToggleUI();
+            syncUrlState(keySelect.value, currentDisplayMode);
+
+            if (keySelect.value === "C") {
+                SCALES.forEach((scale) => {
+                    renderStaffForScale(keySelect.value, scale, currentDisplayMode);
+                });
+            }
+        }
+
         function updateStaffVisibility(selectedKey) {
             const staffSections = document.getElementById("staff-sections");
+            const staffModeBar = document.getElementById("staff-mode-bar");
             const triggers = document.querySelectorAll("tbody th");
             const isKeyless = selectedKey === "—";
+            const isKeyC = selectedKey === "C";
 
             if (staffSections) {
                 staffSections.style.display = isKeyless ? "none" : "grid";
+            }
+
+            if (staffModeBar) {
+                staffModeBar.style.display = isKeyC ? "flex" : "none";
             }
 
             triggers.forEach((th) => {
@@ -188,23 +250,11 @@
             updateStaffVisibility(selectedKey);
 
             if (!isKeyless) {
+                const activeMode = selectedKey === "C" ? currentDisplayMode : "scale";
                 SCALES.forEach((scale) => {
-                    renderStaffForScale(selectedKey, scale);
+                    renderStaffForScale(selectedKey, scale, activeMode);
                 });
             }
-        }
-
-        function syncUrlWithKey(selectedKey) {
-            const url = new URL(window.location.href);
-            const paramValue = KEY_TO_PARAM[selectedKey];
-
-            if (paramValue) {
-                url.searchParams.set("key", paramValue);
-            } else {
-                url.searchParams.delete("key");
-            }
-
-            window.history.replaceState({}, "", url.toString());
         }
 
         function getInitialKeyFromUrl(selectElement) {
@@ -224,19 +274,30 @@
         const keySelect = document.getElementById("key-select");
         keySelect.addEventListener("change", (e) => {
             const selectedKey = e.target.value;
-            syncUrlWithKey(selectedKey);
+            syncUrlState(selectedKey, currentDisplayMode);
             renderTable(selectedKey);
+        });
+
+        document.querySelectorAll("#mode-toggle .mode-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                setDisplayMode(btn.dataset.mode);
+            });
         });
 
         window.addEventListener("resize", () => {
             if (keySelect.value === "—") return;
+            const activeMode = keySelect.value === "C" ? currentDisplayMode : "scale";
             SCALES.forEach((scale) => {
-                renderStaffForScale(keySelect.value, scale);
+                renderStaffForScale(keySelect.value, scale, activeMode);
             });
         });
 
+        currentDisplayMode = getInitialModeFromUrl();
+        syncModeToggleUI();
+
         const initialKey = getInitialKeyFromUrl(keySelect);
         keySelect.value = initialKey;
+        syncUrlState(initialKey, currentDisplayMode);
         renderTable(initialKey);
     </script>
 <script src="beta-badge.js" defer></script>

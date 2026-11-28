@@ -147,6 +147,16 @@ const HIGH_OCTAVE_KEYS = new Set(["A", "A♭ (G♯)", "G"]);
 
 const PREFER_FLAT_MAJOR_KEYS = new Set(["F", "B♭", "E♭", "A♭ (G♯)", "D♭ (C♯)"]);
 
+const QUALITY_CHORD_INTERVALS = {
+    "maj7":   [0, 4, 7, 11],
+    "m7":     [0, 3, 7, 10],
+    "7":      [0, 4, 7, 10],
+    "m7b5":   [0, 3, 6, 10],
+    "mmaj7":  [0, 3, 7, 11],
+    "maj7s5": [0, 4, 8, 11],
+    "dim7":   [0, 3, 6, 9]
+};
+
 const SCALES = [
     {
         name: "Major",
@@ -257,6 +267,24 @@ function getKeylessDegreeLabel(degreeIndex, scaleInterval) {
     return baseDegree;
 }
 
+function spellPitchForLetter(pitch, targetLetter, preferFlat) {
+    const normalizedPitch = ((pitch % 12) + 12) % 12;
+    const candidates = PITCH_SPELLINGS[normalizedPitch];
+
+    const matchingLetter = candidates.filter((name) => name.startsWith(targetLetter));
+    if (matchingLetter.length > 0) {
+        const preferred = matchingLetter.find((name) =>
+            preferFlat ? name.includes("♭") : !name.includes("♭")
+        );
+        return preferred || matchingLetter[0];
+    }
+
+    const fallback = candidates.find((name) =>
+        preferFlat ? name.includes("♭") : !name.includes("♭")
+    );
+    return fallback || candidates[0];
+}
+
 function spellScaleNotes(selectedKey, intervals, scale = null, options = {}) {
     const tonicPitch = KEY_ROOT_PITCH[selectedKey];
     const startLetter = getStartLetter(selectedKey, scale, options);
@@ -266,20 +294,7 @@ function spellScaleNotes(selectedKey, intervals, scale = null, options = {}) {
     return intervals.map((interval, idx) => {
         const pitch = (tonicPitch + interval) % 12;
         const targetLetter = LETTERS[(startLetterIndex + idx) % 7];
-        const candidates = PITCH_SPELLINGS[pitch];
-
-        const matchingLetter = candidates.filter((name) => name.startsWith(targetLetter));
-        if (matchingLetter.length > 0) {
-            const preferred = matchingLetter.find((name) =>
-                preferFlat ? name.includes("♭") : !name.includes("♭")
-            );
-            return preferred || matchingLetter[0];
-        }
-
-        const fallback = candidates.find((name) =>
-            preferFlat ? name.includes("♭") : !name.includes("♭")
-        );
-        return fallback || candidates[0];
+        return spellPitchForLetter(pitch, targetLetter, preferFlat);
     });
 }
 
@@ -327,12 +342,17 @@ function mapSpelledToOctaves(spelled7, baseOctave) {
     });
 }
 
-function buildScalePitchSequence(selectedKey, scale) {
+function getBaseOctaveForKey(selectedKey) {
     const tonicPitch = KEY_ROOT_PITCH[selectedKey];
     let baseOctave = tonicPitch >= 7 ? 3 : 4;
     if (HIGH_OCTAVE_KEYS.has(selectedKey)) {
         baseOctave += 1;
     }
+    return baseOctave;
+}
+
+function buildScalePitchSequence(selectedKey, scale) {
+    const baseOctave = getBaseOctaveForKey(selectedKey);
     const topOctave = baseOctave + 1;
 
     const ascSpelled7 = spellScaleNotes(selectedKey, scale.intervals, scale);
@@ -347,4 +367,46 @@ function buildScalePitchSequence(selectedKey, scale) {
     const descendingNotes = [topRoot, ...descSevenReversed];
 
     return [...ascendingNotes, ...descendingNotes];
+}
+
+// 各ディグリー（Ⅰ〜Ⅶ）の上行4声和音（ルート・3度・5度・7度）を生成
+function buildFourVoiceChordSequence(selectedKey, scale) {
+    const tonicPitch = KEY_ROOT_PITCH[selectedKey];
+    const startLetter = getStartLetter(selectedKey, scale);
+    const startLetterIndex = LETTERS.indexOf(startLetter);
+    const preferFlat = shouldPreferFlat(selectedKey, scale);
+    const baseOctave = getBaseOctaveForKey(selectedKey);
+
+    const chordLetterOffsets = [0, 2, 4, 6];
+
+    return scale.intervals.map((degreeInterval, degreeIdx) => {
+        const quality = scale.qualities[degreeIdx];
+        const chordSemitones = QUALITY_CHORD_INTERVALS[quality] || [0, 4, 7, 11];
+        const chordRootPitch = (tonicPitch + degreeInterval) % 12;
+        const chordRootLetterIdx = (startLetterIndex + degreeIdx) % 7;
+        const chordRootLetter = LETTERS[chordRootLetterIdx];
+
+        const rootOctave = baseOctave + (chordRootLetterIdx < startLetterIndex ? 1 : 0);
+        const rootLabel = spellPitchForLetter(chordRootPitch, chordRootLetter, preferFlat);
+
+        const voices = chordSemitones.map((semitoneOffset, voiceIdx) => {
+            const pitch = (chordRootPitch + semitoneOffset) % 12;
+            const letterOffset = chordLetterOffsets[voiceIdx];
+            const targetLetterIdx = (chordRootLetterIdx + letterOffset) % 7;
+            const targetLetter = LETTERS[targetLetterIdx];
+            const octaveWrap = targetLetterIdx < chordRootLetterIdx ? 1 : 0;
+
+            return {
+                label: spellPitchForLetter(pitch, targetLetter, preferFlat),
+                octave: rootOctave + octaveWrap
+            };
+        });
+
+        return {
+            degree: DEGREES[degreeIdx],
+            rootLabel,
+            quality,
+            voices
+        };
+    });
 }
